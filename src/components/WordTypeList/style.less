@@ -1,0 +1,23 @@
+.word-type-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 5px;
+  cursor: pointer;
+  border-style: ridge;
+  border-color: transparent;
+  font-size: larger;
+  height: 2em;
+  &:hover {
+    border-color: white;
+  }
+  & > .word-type-item-label {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

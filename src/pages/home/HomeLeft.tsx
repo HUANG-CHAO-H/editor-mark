@@ -1,7 +1,9 @@
+import { WordTypeList } from '../../components/WordTypeList';
+
 export function HomeLeft() {
   return (
-    <div style={{ backgroundColor: 'yellow', height: '100%' }}>
-      HomeLeft
+    <div style={{ height: '100%', borderRightStyle: 'groove' }}>
+      <WordTypeList />
     </div>
   )
 }
