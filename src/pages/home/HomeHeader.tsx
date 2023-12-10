@@ -1,9 +1,9 @@
 import { Nav } from '@douyinfe/semi-ui';
-import { IconFolder, IconUser, IconFolderOpen, IconSave, IconSemiLogo } from '@douyinfe/semi-icons';
-import { useFileContext } from '../../context/FileContext.tsx';
+import { IconFolder, IconUser, IconFolderOpen, IconSave, IconSemiLogo, IconClose } from '@douyinfe/semi-icons';
+import {useEditorContext} from "../../context/EditorContext.tsx";
 
 export function HomeHeader() {
-  const fileContext = useFileContext();
+  const editorContext = useEditorContext();
   return (
     <div style={{ width: '100%' }}>
       <Nav
@@ -28,6 +28,11 @@ export function HomeHeader() {
                 text: '保存文件',
                 icon: <IconSave />,
               },
+              {
+                itemKey: 'file-close',
+                text: '关闭文件',
+                icon: <IconClose />,
+              },
             ]
           },
           { itemKey: 'user', text: '用户管理', icon: <IconUser /> },
@@ -36,7 +41,13 @@ export function HomeHeader() {
         onSelect={info => {
           switch (info.itemKey) {
             case 'file-open':
-              fileContext.openFile();
+              editorContext.openFile();
+              break;
+            case 'file-save':
+              editorContext.saveFile();
+              break;
+            case 'file-close':
+              editorContext.closeFile();
               break;
           }
         }}

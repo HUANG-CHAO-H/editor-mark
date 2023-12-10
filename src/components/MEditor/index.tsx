@@ -1,4 +1,4 @@
-import {useEffect, useState, useMemo} from "react";
+import {useEffect, useState} from "react";
 import {
   Editor,
   Modules,
@@ -15,6 +15,7 @@ import {
 import {ZoneDelta} from "@editor-kit/delta";
 import {Deltas} from "@editor-kit/delta/dist/interface";
 import '@editor-kit/core/dist/style/index.css';
+import {useEditorContext} from "../../context/EditorContext.tsx";
 
 // 配置依赖 full 版本
 const modules: Modules = {
@@ -31,25 +32,11 @@ const registerPlugin = (editor: Editor): IPlugin[] => {
   ];
 };
 
-export interface MEditorProps {
-  initValue: string | ZoneDelta;
-}
 
-export function MEditor(props: MEditorProps) {
-  const [editor, setEditor] = useState<Editor>();
+export function MEditor() {
+  const {editor, setEditor} = useEditorContext();
   const [deltas, setDeltas] = useState<ZoneDelta>();
   const [isEditing, setIsEditing] = useState(false);
-  const defaultContent = useMemo<ZoneDelta | undefined>(() => {
-    if (!props.initValue) {
-      return undefined
-    }
-    if (typeof props.initValue === 'string') {
-      const zoneDelta = new ZoneDelta();
-      zoneDelta.insert(props.initValue);
-      return zoneDelta;
-    }
-    return props.initValue;
-  }, [props.initValue]);
 
   useEffect(() => {
     if (!editor) {
@@ -73,7 +60,6 @@ export function MEditor(props: MEditorProps) {
   return (
     <EditorComponent
       editable
-      initData={defaultContent}
       businessKey="doc_sdk_demo"
       style={{ padding: 5, height: '100%', cursor: 'text' }}
       modules={modules}

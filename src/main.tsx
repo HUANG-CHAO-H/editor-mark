@@ -3,12 +3,12 @@ import ReactDOM from 'react-dom/client';
 import './index.less';
 
 import { Home } from './pages/home';
-import { FileContextProvider } from './context/FileContext.tsx';
+import {EditorContextProvider} from './context/EditorContext.tsx';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <FileContextProvider>
+    <EditorContextProvider>
       <Home />
-    </FileContextProvider>
+    </EditorContextProvider>
   </React.StrictMode>,
 )
