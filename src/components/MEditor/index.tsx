@@ -1,4 +1,3 @@
-import {useEffect, useState} from "react";
 import {
   Editor,
   Modules,
@@ -10,12 +9,14 @@ import {
   UndoModule,
   InputModel,
   IPlugin,
+  BlockElementDeserializer,
+  TextNodeDeserializer,
   EditorEventType,
 } from "@editor-kit/core";
-import {ZoneDelta} from "@editor-kit/delta";
-import {Deltas} from "@editor-kit/delta/dist/interface";
 import '@editor-kit/core/dist/style/index.css';
-import {useEditorContext} from "../../context/EditorContext.tsx";
+// import {EditorEventType} from "@editor-kit/core/dist/event";
+import {useEditorContext} from "../../context";
+import { BackgroundPlugin } from './WordTypeRender.tsx';
 
 // 配置依赖 full 版本
 const modules: Modules = {
@@ -28,34 +29,15 @@ const modules: Modules = {
 
 const registerPlugin = (editor: Editor): IPlugin[] => {
   return [
-    // new KeyboardShortcuts({ editor }),
+    new BlockElementDeserializer(),
+    new TextNodeDeserializer(),
+    new BackgroundPlugin(),
   ];
 };
 
 
 export function MEditor() {
-  const {editor, setEditor} = useEditorContext();
-  const [deltas, setDeltas] = useState<ZoneDelta>();
-  const [isEditing, setIsEditing] = useState(false);
-
-  useEffect(() => {
-    if (!editor) {
-      return;
-    }
-    const onFocus = () => {
-      setIsEditing(true);
-    }
-    const onBlur = () => {
-      setIsEditing(false);
-      setDeltas(editor.getContent(true).deltas[0])
-    }
-    editor.on(EditorEventType.FOCUS, onFocus);
-    editor.on(EditorEventType.BLUR, onBlur);
-    return () => {
-      editor.off(EditorEventType.FOCUS, onFocus);
-      editor.off(EditorEventType.BLUR, onBlur);
-    }
-  }, [editor]);
+  const {setEditor} = useEditorContext();
 
   return (
     <EditorComponent
@@ -66,6 +48,10 @@ export function MEditor() {
       register={registerPlugin}
       onInit={(editor: Editor) => {
         setEditor(editor);
+        editor.on(EditorEventType.SELECTION_CHANGE, ev => {
+          console.info('EditorEventType.SELECTION_CHANGE', ev);
+        });
+        // TODO debug完成后需要删除
         (window as any).editor = editor;
       }}
     />

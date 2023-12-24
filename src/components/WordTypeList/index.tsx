@@ -1,7 +1,7 @@
 import {Button, Divider} from "@douyinfe/semi-ui";
 import {IconDisc, IconSetting, IconArrowUp, IconArrowDown, IconClose} from "@douyinfe/semi-icons";
-import {WordTypeInfo} from "../../models";
-import {useWordTypeContext} from "../../context";
+import {WordTypeInfo, wordTypeQuery} from "../../models";
+import {useEditorContext, useWordTypeContext} from "../../context";
 import './style.less';
 
 export function WordTypeList() {
@@ -26,11 +26,11 @@ export function WordTypeList() {
             if (type === 'edit') {
               wordTypeContext.updateModal(index);
             } else if (type === 'up') {
-              wordTypeContext.toFront(index);
+              wordTypeQuery.run('toFront', index);
             } else if (type === 'down') {
-              wordTypeContext.toEnd(index);
+              wordTypeQuery.run('toEnd', index);
             } else if (type === 'delete') {
-              wordTypeContext.delete(index);
+              wordTypeQuery.run('delete', index);
             }
           }}
         />
@@ -49,13 +49,41 @@ export interface WordTypeItemProps {
 }
 
 export function WordTypeItem(props: WordTypeItemProps) {
+  const { value: wordTypeInfo } = props;
+  const { editor } = useEditorContext();
   return (
     <>
       <div
         className="word-type-item"
         style={{color: props.value.color || undefined, backgroundColor: props.value.backGroundColor}}
       >
-        <div className="word-type-item-label">
+        <div
+          className="word-type-item-label"
+          onClick={event => {
+            event.stopPropagation();
+            if (!editor || !wordTypeInfo?.typeKey) {
+              return;
+            }
+            const state = editor.getContentState();
+            const pos = editor.selection.getSelection();
+            const attr = state.getAttributes(pos.start, pos.end).toMap();
+            // 有这个属性了, 那么就移除它
+            if (attr[wordTypeInfo.typeKey]) {
+              state.setAttributes(pos, {
+                [wordTypeInfo.typeKey]: '',
+              });
+            } else {
+              // 没有, 就添加
+              state.setAttributes(pos, {
+                [wordTypeInfo.typeKey]: 'true',
+              });
+            }
+            event.stopPropagation();
+            editor.focus();
+            editor.selection.setSelection(pos);
+            console.info(state.getAttributes(pos.start, pos.end).toMap());
+          }}
+        >
           <IconDisc style={{opacity: props.selected ? undefined : 0}}/>&nbsp;
           <span>{props.value.name}</span>
         </div>

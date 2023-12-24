@@ -5,5 +5,5 @@ export function HomeRight() {
     <div style={{ height: '100%', overflow: 'auto' }}>
       <MEditor />
     </div>
-  )
+  );
 }
