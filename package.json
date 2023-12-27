@@ -12,8 +12,10 @@
   "dependencies": {
     "@douyinfe/semi-ui": "^2.47.0",
     "@douyinfe/semi-icons": "^2.48.0",
-    "@editor-kit/core": "^4.107.0",
-    "@editor-kit/delta": "^4.107.0",
+    "@editor-kit/core": "^4.111.0",
+    "@editor-kit/lite": "^4.111.0",
+    "@editor-kit/delta": "^4.111.0",
+    "@editor-kit/dom-renderer": "^4.111.0",
     "lodash": "^4.17.21",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

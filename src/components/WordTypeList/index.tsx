@@ -1,5 +1,6 @@
 import {Button, Divider} from "@douyinfe/semi-ui";
 import {IconDisc, IconSetting, IconArrowUp, IconArrowDown, IconClose} from "@douyinfe/semi-icons";
+import {IContentState} from "@editor-kit/core";
 import {WordTypeInfo, wordTypeQuery} from "../../models";
 import {useEditorContext, useWordTypeContext} from "../../context";
 import './style.less';
@@ -55,7 +56,7 @@ export function WordTypeItem(props: WordTypeItemProps) {
     <>
       <div
         className="word-type-item"
-        style={{color: props.value.color || undefined, backgroundColor: props.value.backGroundColor}}
+        style={{color: props.value.color || undefined, backgroundColor: props.value.backgroundColor}}
       >
         <div
           className="word-type-item-label"
@@ -64,7 +65,7 @@ export function WordTypeItem(props: WordTypeItemProps) {
             if (!editor || !wordTypeInfo?.typeKey) {
               return;
             }
-            const state = editor.getContentState();
+            const state: IContentState = editor.getContentState();
             const pos = editor.selection.getSelection();
             const attr = state.getAttributes(pos.start, pos.end).toMap();
             // 有这个属性了, 那么就移除它
@@ -78,7 +79,9 @@ export function WordTypeItem(props: WordTypeItemProps) {
                 [wordTypeInfo.typeKey]: 'true',
               });
             }
-            event.stopPropagation();
+            const c = editor.getContent();
+            editor.reset();
+            editor.setContent(c);
             editor.focus();
             editor.selection.setSelection(pos);
             console.info(state.getAttributes(pos.start, pos.end).toMap());

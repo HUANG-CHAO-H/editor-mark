@@ -12,11 +12,17 @@ dependencies:
     specifier: ^2.47.0
     version: 2.47.0(react-dom@18.2.0)(react@18.2.0)
   '@editor-kit/core':
-    specifier: ^4.107.0
-    version: 4.107.0(@platform-fe/palette@0.2.0)(react-dom@18.2.0)(react@18.2.0)
+    specifier: ^4.111.0
+    version: 4.111.0(@platform-fe/palette@0.2.0)(react-dom@18.2.0)(react@18.2.0)
   '@editor-kit/delta':
-    specifier: ^4.107.0
-    version: 4.107.0
+    specifier: ^4.111.0
+    version: 4.111.0
+  '@editor-kit/dom-renderer':
+    specifier: ^4.111.0
+    version: 4.111.0(@editor-kit/core@4.111.0)(react-dom@18.2.0)(react@18.2.0)
+  '@editor-kit/lite':
+    specifier: ^4.111.0
+    version: 4.111.0(@platform-fe/palette@0.2.0)(react-dom@18.2.0)(react@18.2.0)
   classnames:
     specifier: ^2.3.2
     version: 2.3.2
@@ -77,7 +83,7 @@ devDependencies:
     specifier: ^5.2.2
     version: 5.2.2
   vite:
-    specifier: ^5.0.5
+    specifier: ^5.0.10
     version: 5.0.10(less@4.2.0)
 
 packages:
@@ -455,44 +461,57 @@ packages:
       utility-types: 3.10.0
     dev: false
 
-  /@editor-kit/core@4.107.0(@platform-fe/palette@0.2.0)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-6MR4csnjKGTHnkQl0vGiD62+wsu5SIGQai3gSPgBw4D5tSUB13FdCV1eKIwmK5D9/NnHN4X9Ce495ZyoShrXQA==}
+  /@editor-kit/core@4.111.0(@platform-fe/palette@0.2.0)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-ArU5BRepgCJALP//BM9BT2Ug6+ZkKXzF7433KRLXWRAE+aEv7ZGulgOpw4vjLvRLnCXTGg9oBO3o4FLEQo/sJQ==}
     peerDependencies:
       '@platform-fe/palette': ^0.2.0
       react: '*'
       react-dom: '*'
     dependencies:
-      '@editor-kit/delta': 4.107.0
-      '@editor-kit/dom-renderer': 4.107.0(@editor-kit/core@4.107.0)(react-dom@18.2.0)(react@18.2.0)
-      '@editor-kit/utils': 4.107.0
+      '@editor-kit/delta': 4.111.0
+      '@editor-kit/dom-renderer': 4.111.0(@editor-kit/core@4.111.0)(react-dom@18.2.0)(react@18.2.0)
+      '@editor-kit/utils': 4.111.0
       '@platform-fe/palette': 0.2.0
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /@editor-kit/delta@4.107.0:
-    resolution: {integrity: sha512-W95TDdbM14TsAF16Cjt8pk7gl2D9XZj3R5YTLnH2O3tWIehuwQ9BCu0FaB9wqIdqdtS6rIohJyvSVMsuB0BxIQ==}
+  /@editor-kit/delta@4.111.0:
+    resolution: {integrity: sha512-eclFsLXOpoN89gB7Qj4+gYJI+lXT1LrE9fe+JA60wQSJVjlyjgy0jY8CM2pH9PuY/ZrfDCYVE7+50xLCm/1o3g==}
     dependencies:
-      '@editor-kit/utils': 4.107.0
+      '@editor-kit/utils': 4.111.0
       fast-diff: 1.2.0
     dev: false
 
-  /@editor-kit/dom-renderer@4.107.0(@editor-kit/core@4.107.0)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-hdqrD0xzsRR4wiRD+Wy4mUwHmM/rd/e6dHKJsGiBJCP0ZiYWk8W5zJPkxSab60/n8KPB5CRTLdvasS5q777iEQ==}
+  /@editor-kit/dom-renderer@4.111.0(@editor-kit/core@4.111.0)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-myTCKjQjGEz8i7AeWy7/bfCv2+yaFVfGPDICIlbizbDe1Tx4nEaNUnu5Q+54TrQFc8gqzcnadvEX9omHF3hHgA==}
     peerDependencies:
       '@editor-kit/core': '*'
       react: '*'
       react-dom: '*'
     dependencies:
-      '@editor-kit/core': 4.107.0(@platform-fe/palette@0.2.0)(react-dom@18.2.0)(react@18.2.0)
-      '@editor-kit/delta': 4.107.0
-      '@editor-kit/utils': 4.107.0
+      '@editor-kit/core': 4.111.0(@platform-fe/palette@0.2.0)(react-dom@18.2.0)(react@18.2.0)
+      '@editor-kit/delta': 4.111.0
+      '@editor-kit/utils': 4.111.0
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /@editor-kit/utils@4.107.0:
-    resolution: {integrity: sha512-2R7UQTZSgTeUhN11pY+MivWigxczF9OUic2s77esOf1BeuB27HXXdKtK0qtqF+OF7Oc1jJab8l0ywcRU7FfHuA==}
+  /@editor-kit/lite@4.111.0(@platform-fe/palette@0.2.0)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-vwAPxdKHP/dj+5GSpls8obk7NXTYYDaBLyuA2scA4Hdcs00V8Xp4vl86mpkWHtR/9unE29bN4R+6oT9DzqsX3w==}
+    peerDependencies:
+      react: '*'
+    dependencies:
+      '@editor-kit/core': 4.111.0(@platform-fe/palette@0.2.0)(react-dom@18.2.0)(react@18.2.0)
+      '@editor-kit/delta': 4.111.0
+      react: 18.2.0
+    transitivePeerDependencies:
+      - '@platform-fe/palette'
+      - react-dom
+    dev: false
+
+  /@editor-kit/utils@4.111.0:
+    resolution: {integrity: sha512-7x1Y1pLyPcTh3mB4l0zl//hNmW5v2djGZGfACDE5fPA/mDONNPpVSv9jFUh81xa7v62FWjcb7pwga+mndSrmjA==}
     dependencies:
       '@platform-fe/palette': 0.2.0
     dev: false

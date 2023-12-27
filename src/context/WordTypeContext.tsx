@@ -84,7 +84,7 @@ export function WordTypeContextProvider(props: { children?: ReactNode }) {
           />
           <Form.Input label="名称" field="name" />
           <FormColorSelect label="字体颜色" field="color" />
-          <FormColorSelect label="背景颜色" field="backGroundColor" />
+          <FormColorSelect label="背景颜色" field="backgroundColor" />
           <Form.TextArea label="描述" field="description" />
         </Form>
       </Modal>
@@ -97,8 +97,13 @@ function ColorSelect(props: { value?: string, onChange?: (value: string) => void
     <Popover
       trigger="click"
       position="right"
-      content={<SketchPicker color={props.value} onChange={v => props.onChange?.(v.hex)} />}
-    >
+      content={
+        <SketchPicker
+          color={props.value}
+          disableAlpha={false}
+          onChange={v => props.onChange?.(v.hex)}
+        />
+      }>
       <div style={{
         backgroundColor: props.value,
         width: 60,
