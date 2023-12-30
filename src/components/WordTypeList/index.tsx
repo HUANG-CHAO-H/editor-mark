@@ -1,5 +1,13 @@
 import {Button, Divider} from "@douyinfe/semi-ui";
-import {IconDisc, IconSetting, IconArrowUp, IconArrowDown, IconClose} from "@douyinfe/semi-icons";
+import {
+  IconDisc,
+  IconSetting,
+  IconArrowUp,
+  IconArrowDown,
+  IconClose,
+  IconEyeOpened,
+  IconEyeClosed,
+} from "@douyinfe/semi-icons";
 import {IContentState} from "@editor-kit/core";
 import {WordTypeInfo, wordTypeQuery} from "../../models";
 import {useEditorContext, useWordTypeContext} from "../../context";
@@ -32,6 +40,10 @@ export function WordTypeList() {
               wordTypeQuery.run('toEnd', index);
             } else if (type === 'delete') {
               wordTypeQuery.run('delete', index);
+            } else if (type === 'hide') {
+              wordTypeQuery.run('hide', index);
+            } else if (type === 'show') {
+              wordTypeQuery.run('show', index);
             }
           }}
         />
@@ -46,7 +58,7 @@ export interface WordTypeItemProps {
   // 选中状态
   selected?: boolean;
   // 针对type的操作
-  operation?: (type: 'edit' | 'up' | 'down' | 'delete') => void;
+  operation?: (type: 'edit' | 'up' | 'down' | 'delete' | 'hide' | 'show') => void;
 }
 
 export function WordTypeItem(props: WordTypeItemProps) {
@@ -79,9 +91,6 @@ export function WordTypeItem(props: WordTypeItemProps) {
                 [wordTypeInfo.typeKey]: 'true',
               });
             }
-            const c = editor.getContent();
-            editor.reset();
-            editor.setContent(c);
             editor.focus();
             editor.selection.setSelection(pos);
             console.info(state.getAttributes(pos.start, pos.end).toMap());
@@ -91,6 +100,14 @@ export function WordTypeItem(props: WordTypeItemProps) {
           <span>{props.value.name}</span>
         </div>
         <div className="word-type-item-operation">
+          <Button
+            theme="borderless"
+            type="secondary"
+            size="small"
+            icon={wordTypeInfo.hidden ? <IconEyeClosed /> : <IconEyeOpened />}
+            aria-label="上移"
+            onClick={() => props.operation?.(wordTypeInfo.hidden ? 'show' : 'hide')}
+          />
           <Button
             theme="borderless"
             type="secondary"

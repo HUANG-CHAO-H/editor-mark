@@ -1,3 +1,4 @@
+import {useEffect} from "react";
 import {
   Editor,
   Modules,
@@ -18,7 +19,6 @@ import '@editor-kit/core/dist/style/index.css';
 import {useEditorContext} from "../../context";
 import { WordTypePlugin } from './WordTypeRender.tsx';
 import {wordTypeQuery} from "../../models";
-import {useEffect, useState} from "react";
 
 // 配置依赖 full 版本
 const modules: Modules = {
@@ -51,13 +51,25 @@ const deltaSet = new DeltaSet({
 });
 
 export function MEditor() {
-  const {setEditor} = useEditorContext();
+  const {editor, setEditor} = useEditorContext();
   const wordTypeList = wordTypeQuery.useQuery().data!;
-  const [refresh, setRefresh] = useState(Number.MIN_SAFE_INTEGER);
-  useEffect(() => setRefresh(v => v + 1), [wordTypeList]);
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    const content = editor.getContent();
+    editor.reset();
+    editor.setContent(content);
+  }, [editor, wordTypeList]);
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    editor.setContent(deltaSet);
+  }, [editor]);
   return (
     <EditorComponent
-      key={refresh}
       editable
       businessKey="doc_sdk_demo"
       style={{ padding: 5, height: '100%', cursor: 'text' }}
@@ -67,7 +79,6 @@ export function MEditor() {
         new TextNodeDeserializer(),
         new WordTypePlugin(e, wordTypeList),
       ]}
-      initData={deltaSet}
       onInit={(editor: Editor) => {
         setEditor(editor);
         // editor.on(EditorEventType.SELECTION_CHANGE, ev => {

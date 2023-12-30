@@ -1,3 +1,4 @@
+import isEqual from "lodash/isEqual";
 import {QueryHelper, QueryLoader} from "../utils/QueryHelper";
 import {queryClientSingleton} from "../context";
 
@@ -12,6 +13,8 @@ export interface WordTypeInfo {
   backgroundColor: string;
   // 类型描述
   description: string;
+  // 是否隐藏此类型的标签展示
+  hidden?: boolean;
 }
 
 export function formatWordTypeInfo(info: Partial<WordTypeInfo> | Record<string, any>): WordTypeInfo {
@@ -21,6 +24,7 @@ export function formatWordTypeInfo(info: Partial<WordTypeInfo> | Record<string, 
     color: info.color || '',
     backgroundColor: info.backgroundColor || '',
     description: info.description || '',
+    hidden: info.hidden || undefined,
   }
 }
 
@@ -44,6 +48,7 @@ export const wordTypeQuery = new QueryHelper(wordTypeLoader, {
     }
     return list.findIndex(v => v.typeKey === key);
   },
+
   /**
    * 向前移动
    * @param index 要操作的元素index
@@ -60,6 +65,7 @@ export const wordTypeQuery = new QueryHelper(wordTypeLoader, {
     wordTypeQuery.setQueryData([], arr);
     return true;
   },
+
   /**
    * 向后移动
    * @param index 要操作的元素index
@@ -76,6 +82,7 @@ export const wordTypeQuery = new QueryHelper(wordTypeLoader, {
     wordTypeQuery.setQueryData([], arr);
     return true;
   },
+
   /**
    * 追加元素
    */
@@ -83,6 +90,7 @@ export const wordTypeQuery = new QueryHelper(wordTypeLoader, {
     const attr = [...(wordTypeQuery.getQueryData() || []), info];
     wordTypeQuery.setQueryData([], attr);
   },
+
   /**
    * 更新元素数据
    * @param index 要更新的元素
@@ -101,6 +109,7 @@ export const wordTypeQuery = new QueryHelper(wordTypeLoader, {
     wordTypeQuery.setQueryData([], arr);
     return true;
   },
+
   /**
    * 删除元素
    * @param index 要追加的元素
@@ -113,6 +122,46 @@ export const wordTypeQuery = new QueryHelper(wordTypeLoader, {
     const arr = [...oldV];
     arr.splice(index, 1);
     wordTypeQuery.setQueryData([], arr);
+    return true;
+  },
+
+  /**
+   * 隐藏目标标签类型
+   */
+  hide(index: number): boolean {
+    return wordTypeQuery.run('update', index, { hidden: true });
+  },
+
+  /**
+   * 展示目标标签类型
+   */
+  show(index: number): boolean {
+    return wordTypeQuery.run('update', index, { hidden: undefined });
+  },
+
+  /**
+   * 隐藏所有类型
+   */
+  batchUpdate(
+    updater: (value: WordTypeInfo, index: number) => WordTypeInfo,
+  ) {
+    const oldV = wordTypeQuery.getQueryData();
+    if (!oldV?.length) {
+      return oldV;
+    }
+    const arr: WordTypeInfo[] = Array(oldV.length);
+    let hasChange = false;
+    for (let i = 0; i < arr.length; i++) {
+      arr[i] = updater(oldV[i], i);
+      if (isEqual(oldV[i], arr[i])) {
+        arr[i] = oldV[i];
+      } else {
+        hasChange = true;
+      }
+    }
+    if (hasChange) {
+      wordTypeQuery.setQueryData([], arr);
+    }
     return true;
   },
 });

@@ -1,11 +1,11 @@
 import {Plugin, IRenderContext, Editor} from '@editor-kit/core';
-import {WORD_TYPE_KEY_PRE, WordTypeInfo} from "../../models";
+import {WORD_TYPE_KEY_PRE, WordTypeInfo, wordTypeQuery} from "../../models";
 
 export class WordTypePlugin extends Plugin {
   // 编辑器实例
-  readonly editor: Editor;
+  editor: Editor;
   // word type list列表
-  readonly list: WordTypeInfo[];
+  list: WordTypeInfo[];
 
   match(key: string, value: string){
     return key.startsWith(WORD_TYPE_KEY_PRE) && value === 'true';
@@ -14,7 +14,7 @@ export class WordTypePlugin extends Plugin {
   render(context: IRenderContext){
     const { attributes, children } = context;
     const keys = Object.keys(attributes).filter(k => k.startsWith(WORD_TYPE_KEY_PRE) && attributes[k] === 'true');
-    const arr = this.list.filter(l => keys.includes(l.typeKey));
+    const arr = this.list.filter(l => !l.hidden && keys.includes(l.typeKey));
     if (!arr.length) {
       return children;
     }
@@ -32,6 +32,10 @@ export class WordTypePlugin extends Plugin {
     super();
     this.editor = editor;
     this.list = wordTypeList;
+  }
+
+  reset() {
+    this.list = wordTypeQuery.getQueryData() || [];
   }
 }
 
