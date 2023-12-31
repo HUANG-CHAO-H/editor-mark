@@ -1,6 +1,6 @@
 import isEqual from "lodash/isEqual";
 import {QueryHelper, QueryLoader} from "../utils/QueryHelper";
-import {queryClientSingleton} from "../context";
+import {queryClientSingleton} from "../context/QueryProvider/queryClientSingleton";
 
 export interface WordTypeInfo {
   // 类型的key(UUID)
@@ -166,10 +166,24 @@ export const wordTypeQuery = new QueryHelper(wordTypeLoader, {
   },
 });
 
-wordTypeQuery.setQueryData([], [
-  { typeKey: 'WTK01', name: '测试-01', color: '#ffd43b', backgroundColor: '', description: '这是一段测试' },
-  { typeKey: 'WTK02', name: '测试-02', color: '#69db7c', backgroundColor: '', description: '这是一段测试' },
-  { typeKey: 'WTK03', name: '测试-03', color: '#9775fa', backgroundColor: '', description: '这是一段测试' },
-  { typeKey: 'WTK04', name: '测试-04', color: '#748ffc', backgroundColor: '', description: '这是一段测试' },
-]);
+(() => {
+  const info = localStorage.getItem('word-type-config');
+  if (!info) {
+    return;
+  }
+  const formatV = JSON.parse(info);
+  if (formatV instanceof Array) {
+    wordTypeQuery.setQueryData([], formatV);
+  } else {
+    wordTypeQuery.setQueryData([], []);
+  }
+})();
 
+window.addEventListener('beforeunload', () => {
+  const data = wordTypeQuery.getQueryData();
+  if (data) {
+    localStorage.setItem('word-type-config', JSON.stringify(data));
+  } else {
+    localStorage.removeItem('word-type-config');
+  }
+});

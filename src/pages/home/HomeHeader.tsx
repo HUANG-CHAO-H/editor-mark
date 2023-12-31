@@ -1,9 +1,11 @@
 import { Nav } from '@douyinfe/semi-ui';
 import { IconFolder, IconUser, IconFolderOpen, IconSave, IconSemiLogo, IconClose } from '@douyinfe/semi-icons';
-import {useEditorContext} from "../../context/EditorContext.tsx";
+import {useEditorContext, useWordTypeContext} from "../../context";
+import {wordTypeQuery} from "../../models";
 
 export function HomeHeader() {
   const editorContext = useEditorContext();
+  const wordTypeContext = useWordTypeContext();
   return (
     <div style={{ width: '100%' }}>
       <Nav
@@ -35,6 +37,33 @@ export function HomeHeader() {
               },
             ]
           },
+          {
+            itemKey: 'word',
+            text: 'Word',
+            icon: <IconFolder />,
+            items: [
+              {
+                itemKey: 'word-update',
+                text: '管理Word',
+                icon: <IconSave />,
+              },
+              {
+                itemKey: 'word-open',
+                text: '打开Word配置',
+                icon: <IconFolderOpen />,
+              },
+              {
+                itemKey: 'word-save',
+                text: '保存Word配置',
+                icon: <IconFolderOpen />,
+              },
+              {
+                itemKey: 'word-close',
+                text: '关闭Word配置',
+                icon: <IconFolderOpen />,
+              },
+            ]
+          },
           { itemKey: 'user', text: '用户管理', icon: <IconUser /> },
         ]}
         selectedKeys={[]}
@@ -48,6 +77,18 @@ export function HomeHeader() {
               break;
             case 'file-close':
               editorContext.closeFile();
+              break;
+            case 'word-update':
+              wordTypeContext.openWordSetting();
+              break;
+            case 'word-open':
+              wordTypeContext.openJSON();
+              break;
+            case 'word-save':
+              wordTypeContext.saveJSON();
+              break;
+            case 'word-close':
+              wordTypeQuery.setQueryData([], []);
               break;
           }
         }}
