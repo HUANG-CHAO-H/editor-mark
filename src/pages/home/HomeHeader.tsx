@@ -1,4 +1,4 @@
-import { Nav } from '@douyinfe/semi-ui';
+import { Nav, Modal } from '@douyinfe/semi-ui';
 import { IconFolder, IconUser, IconFolderOpen, IconSave, IconSemiLogo, IconClose } from '@douyinfe/semi-icons';
 import {useEditorContext, useWordTypeContext} from "../../context";
 import {wordTypeQuery} from "../../models";
@@ -88,7 +88,11 @@ export function HomeHeader() {
               wordTypeContext.saveJSON();
               break;
             case 'word-close':
-              wordTypeQuery.setQueryData([], []);
+              Modal.confirm({
+                title: '确认关闭Word配置?',
+                centered: true,
+                onOk: () => void wordTypeQuery.setQueryData([], []),
+              });
               break;
           }
         }}

@@ -198,7 +198,11 @@ function WordTypeSetting(props: { visible: boolean; setVisible: (value: boolean)
                 key: '删除',
                 ariaLabel: '删除',
                 icon: <IconClose />,
-                onClick: () => wordTypeQuery.run('delete', index),
+                onClick: () => Modal.confirm({
+                  title: `确认删除 ${l.name} ?`,
+                  centered: true,
+                  onOk: () => void wordTypeQuery.run('delete', index),
+                }),
               },
             ]}
           />
