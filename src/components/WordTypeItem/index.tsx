@@ -4,6 +4,8 @@ import {Button} from "@douyinfe/semi-ui";
 import {useEditorContext} from "../../context";
 import {WordTypeInfo} from "../../models";
 
+import './style.less';
+
 export interface OperationInfo {
   key: string
   icon: ReactNode;
@@ -58,7 +60,7 @@ export function WordTypeItem(props: WordTypeItemProps) {
           {props.value.name}
         </div>
         <div className="word-type-item-operation">
-          {opArray.map(o => o.hidden ? <span /> : (
+          {opArray.map(o => o.hidden ? <span key={o.key} /> : (
             <Button
               key={o.key}
               theme="borderless"

@@ -7,7 +7,7 @@ import noop from 'lodash/noop';
 
 import {createContext} from "../utils";
 import {formatWordTypeInfo, WordTypeInfo, wordTypeQuery} from "../models";
-import {WordTypeItem} from "../components/WordTypeList";
+import {WordTypeItem} from "../components/WordTypeItem";
 import {IconArrowDown, IconArrowUp, IconClose, IconSetting} from "@douyinfe/semi-icons";
 
 export interface IWordTypeContext {
@@ -149,7 +149,7 @@ function WordTypeInfoModal(props: { type?: 'create' | 'edit', data?: WordTypeInf
           field="typeKey"
           label="type key"
           disabled={type !== 'create'}
-          rules={[
+          rules={ type !== 'create' ? undefined : [
             { validator: (_, v: string) => /^[0-9a-zA-Z]+$/.test(v), message: 'typeKey只能由数字和大小写字母构成' },
             { validator: (_, v: string) => !list.find(l => l.typeKey === v), message: 'typeKey已存在' },
           ]}
