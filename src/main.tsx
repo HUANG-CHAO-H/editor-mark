@@ -8,7 +8,7 @@ import {WordTypeContextProvider} from "./context";
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <QueryProvider devTools={true}>
+    <QueryProvider devTools={false}>
       <EditorContextProvider>
         <WordTypeContextProvider>
           <Home />
