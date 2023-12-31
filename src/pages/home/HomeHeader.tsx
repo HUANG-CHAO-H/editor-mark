@@ -1,5 +1,14 @@
 import { Nav, Modal } from '@douyinfe/semi-ui';
-import { IconFolder, IconArticle, IconSimilarity, IconFolderOpen, IconSave, IconSemiLogo, IconClose } from '@douyinfe/semi-icons';
+import {
+  IconFolder,
+  IconArticle,
+  IconSimilarity,
+  IconFolderOpen,
+  IconSave,
+  IconSemiLogo,
+  IconClose,
+  IconDuration,
+} from '@douyinfe/semi-icons';
 import {useEditorContext, useWordTypeContext} from "../../context";
 import {wordTypeQuery} from "../../models";
 
@@ -12,7 +21,7 @@ export function HomeHeader() {
         mode={'horizontal'}
         header={{
           logo: <IconSemiLogo style={{ height: '36px', fontSize: 36 }} />,
-          text: 'Semi 运营后台'
+          text: '文本标记'
         }}
         items={[
           {
@@ -64,6 +73,11 @@ export function HomeHeader() {
               },
             ]
           },
+          {
+            itemKey: 'data-analyse',
+            text: '数据统计',
+            icon: <IconDuration />,
+          },
         ]}
         selectedKeys={[]}
         onSelect={info => {
@@ -92,6 +106,9 @@ export function HomeHeader() {
                 centered: true,
                 onOk: () => void wordTypeQuery.setQueryData([], []),
               });
+              break;
+            case 'data-analyse':
+              wordTypeContext.dataAnalyse();
               break;
           }
         }}

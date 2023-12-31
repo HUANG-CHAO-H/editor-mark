@@ -31,6 +31,8 @@ export interface IWordTypeContext {
   openJSON: () => void;
   // 保存配置
   saveJSON: () => void;
+  // 数据统计与分析
+  dataAnalyse: () => void;
 }
 
 export const WordTypeContext = createContext<IWordTypeContext>(undefined, 'WordTypeContext');
@@ -76,6 +78,7 @@ export function WordTypeContextProvider(props: { children?: ReactNode }) {
       a.download = 'wordTypeConfig.json';
       a.click();
     },
+    dataAnalyse: () => undefined,
   }), [list]);
 
   return (
