@@ -1,5 +1,5 @@
 import { Nav, Modal } from '@douyinfe/semi-ui';
-import { IconFolder, IconUser, IconFolderOpen, IconSave, IconSemiLogo, IconClose } from '@douyinfe/semi-icons';
+import { IconFolder, IconArticle, IconSimilarity, IconFolderOpen, IconSave, IconSemiLogo, IconClose } from '@douyinfe/semi-icons';
 import {useEditorContext, useWordTypeContext} from "../../context";
 import {wordTypeQuery} from "../../models";
 
@@ -40,12 +40,12 @@ export function HomeHeader() {
           {
             itemKey: 'word',
             text: 'Word',
-            icon: <IconFolder />,
+            icon: <IconArticle />,
             items: [
               {
                 itemKey: 'word-update',
                 text: '管理Word',
-                icon: <IconSave />,
+                icon: <IconSimilarity />,
               },
               {
                 itemKey: 'word-open',
@@ -55,16 +55,15 @@ export function HomeHeader() {
               {
                 itemKey: 'word-save',
                 text: '保存Word配置',
-                icon: <IconFolderOpen />,
+                icon: <IconSave />,
               },
               {
                 itemKey: 'word-close',
                 text: '关闭Word配置',
-                icon: <IconFolderOpen />,
+                icon: <IconClose />,
               },
             ]
           },
-          { itemKey: 'user', text: '用户管理', icon: <IconUser /> },
         ]}
         selectedKeys={[]}
         onSelect={info => {

@@ -14,7 +14,6 @@ import {
   ZoneState,
   InputModel,
 } from '@editor-kit/lite';
-import {DeltaSet} from "@editor-kit/delta";
 import '@editor-kit/core/dist/style/index.css';
 import {useEditorContext} from "../../context";
 import { WordTypePlugin } from './WordTypeRender.tsx';
@@ -29,27 +28,6 @@ const modules: Modules = {
   [MODULE_KEYS.InputModel]: InputModel
 };
 
-const deltaSet = new DeltaSet({
-  "0": {
-    "ops": [
-      {
-        "insert": "如果您没有被这个列表压垮，那么这一定意味着你可能已经"
-      },
-      {
-        "attributes": {
-          "WTK04": "true"
-        },
-        "insert": "解决了所有的服务器状态"
-      },
-      {
-        "insert": "问题，值得获奖。 然而，如果你和大多数人一样，要么还没有解决所有这些挑战，要么还没有解决大部分挑战，那么我们只是触及了表面!\n"
-      }
-    ],
-    "zoneId": "0",
-    "zoneType": "Z"
-  }
-});
-
 export function MEditor() {
   const {editor, setEditor} = useEditorContext();
   const wordTypeList = wordTypeQuery.useQuery().data!;
@@ -62,12 +40,6 @@ export function MEditor() {
     editor.setContent(content);
   }, [editor, wordTypeList]);
 
-  useEffect(() => {
-    if (!editor) {
-      return;
-    }
-    editor.setContent(deltaSet);
-  }, [editor]);
   return (
     <EditorComponent
       editable

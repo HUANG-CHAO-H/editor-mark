@@ -81,7 +81,7 @@ export function WordTypeContextProvider(props: { children?: ReactNode }) {
   return (
     <WordTypeContext.Provider value={contextValue}>
       {props.children}
-      <a ref={aRef} id="word-type-download" />
+      <a ref={aRef} />
       <input
         key={fileKey}
         type="file"
