@@ -1,13 +1,13 @@
 import {ReactNode, useContext, useMemo, useRef, useState} from "react";
-import {SketchPicker} from "react-color";
 import type {FormApi} from "@douyinfe/semi-ui/lib/es/form";
-import {Button, Form, Modal, Popover, Toast, Tree, withField} from "@douyinfe/semi-ui";
+import {Button, Form, Modal, Toast, Tree} from "@douyinfe/semi-ui";
 import {TreeNodeData} from "@douyinfe/semi-ui/lib/es/tree/interface";
 import {IconArrowDown, IconArrowUp, IconClose, IconSetting} from "@douyinfe/semi-icons";
 
 import {createContext} from "../utils";
 import {formatWordTypeInfo, WordTypeInfo, wordTypeQuery} from "../models";
 import {WordTypeItem} from "../components/WordTypeItem";
+import {FormColorSelect} from "../components/ColorSelect";
 
 export interface IWordTypeContext {
   // word type 列表
@@ -174,8 +174,14 @@ function useWordTypeInfoModal(list: WordTypeInfo[]) {
             ]}
           />
           <Form.Input label="名称" field="name" />
-          <FormColorSelect label="字体颜色" field="color" />
-          <FormColorSelect label="背景颜色" field="backgroundColor" />
+          <div style={{ display: 'flex' }}>
+            <div style={{ width: '50%', display: 'flex', justifyContent: 'center' }}>
+              <FormColorSelect label="字体颜色" field="color" />
+            </div>
+            <div style={{ width: '50%', display: 'flex', justifyContent: 'center' }}>
+              <FormColorSelect label="背景颜色" field="backgroundColor" />
+            </div>
+          </div>
           <Form.TextArea label="描述" field="description" />
         </Form>
       </Modal>
@@ -265,30 +271,3 @@ function useWordTypeSetting(list: WordTypeInfo[], wordTypeContext: IWordTypeCont
     )
   };
 }
-
-// function useDataAnalyse() {}
-
-function ColorSelect(props: { value?: string, onChange?: (value: string) => void }) {
-  return (
-    <Popover
-      trigger="click"
-      position="right"
-      content={
-        <SketchPicker
-          color={props.value}
-          disableAlpha={false}
-          onChange={v => props.onChange?.(v.hex)}
-        />
-      }>
-      <div style={{
-        backgroundColor: props.value,
-        width: 60,
-        height: '100%',
-        minHeight: 30,
-        borderRadius: 5,
-        borderStyle: "outset"
-      }} />
-    </Popover>
-  );
-}
-const FormColorSelect = withField(ColorSelect);
