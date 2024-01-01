@@ -4,6 +4,9 @@ import type { Editor } from "@editor-kit/core";
 import {DeltaSet} from "@editor-kit/delta";
 import {createContext} from "../utils";
 
+const initContent = localStorage.getItem('editor-content-cache');
+const initFontSize = localStorage.getItem('editor-font-size');
+
 export interface IEditorContext {
   editor: Editor | undefined;
   // 编辑器中的文本大小
@@ -52,6 +55,25 @@ export function EditorContextProvider(props: { children?: ReactNode }) {
     },
     closeFile: () => void editor?.reset(),
   }), [editor, fontSize, setFontSize, fileInfo, inputRef]);
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    if (initContent) {
+      try {
+        const formatV = JSON.parse(initContent);
+        editor.setContent(new DeltaSet(formatV))
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    const handler = () => {
+      localStorage.setItem('editor-content-cache', JSON.stringify(editor.getContent().deltas))
+    }
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [editor]);
   return (
     <EditorContext.Provider value={contextValue}>
       {props.children}
@@ -61,7 +83,6 @@ export function EditorContextProvider(props: { children?: ReactNode }) {
   );
 }
 
-const initFontSize = localStorage.getItem('editor-font-size');
 function useFontSize() {
   const [fontSize, setFontSize] = useState<number>(1);
   const sizeRef = useRef(fontSize);

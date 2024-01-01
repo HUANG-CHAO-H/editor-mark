@@ -8,12 +8,12 @@ export class WordTypePlugin extends Plugin {
   list: WordTypeInfo[];
 
   match(key: string, value: string){
-    return key.startsWith(WORD_TYPE_KEY_PRE) && value === 'true';
+    return key.startsWith(WORD_TYPE_KEY_PRE) && Boolean(value);
   }
 
   render(context: IRenderContext){
     const { attributes, children } = context;
-    const keys = Object.keys(attributes).filter(k => k.startsWith(WORD_TYPE_KEY_PRE) && attributes[k] === 'true');
+    const keys = Object.keys(attributes).filter(k => k.startsWith(WORD_TYPE_KEY_PRE) && attributes[k]);
     const arr = this.list.filter(l => !l.hidden && keys.includes(l.typeKey));
     if (!arr.length) {
       return children;

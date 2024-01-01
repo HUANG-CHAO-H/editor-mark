@@ -23,7 +23,7 @@ export function HomeFooter() {
         const attributes = editor.getContentState().getAttributes(event.current.start, event.current.end);
         const keySet = new Set<string>();
         for (let i = 0; i < attributes.length; i++) {
-          if (attributes[i][1] === 'true') {
+          if (attributes[i][1]) {
             keySet.add(attributes[i][0]);
           }
         }

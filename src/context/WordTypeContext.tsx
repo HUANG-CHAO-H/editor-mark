@@ -1,13 +1,17 @@
-import {ReactNode, useContext, useMemo, useRef, useState} from "react";
+import {CSSProperties, ReactNode, useContext, useMemo, useRef, useState} from "react";
+import cloneDeep from 'lodash/cloneDeep';
 import type {FormApi} from "@douyinfe/semi-ui/lib/es/form";
-import {Button, Form, Modal, Toast, Tree} from "@douyinfe/semi-ui";
+import {Button, Form, Modal, Toast, Tree, Table, Popover} from "@douyinfe/semi-ui";
 import {TreeNodeData} from "@douyinfe/semi-ui/lib/es/tree/interface";
 import {IconArrowDown, IconArrowUp, IconClose, IconSetting} from "@douyinfe/semi-icons";
+import type {ColumnProps} from "@douyinfe/semi-ui/lib/es/table/interface";
+import type {Ops} from "@editor-kit/delta/dist/interface";
 
 import {createContext} from "../utils";
 import {formatWordTypeInfo, WordTypeInfo, wordTypeQuery} from "../models";
 import {WordTypeItem} from "../components/WordTypeItem";
 import {FormColorSelect} from "../components/ColorSelect";
+import {useEditorContext} from "./EditorContext.tsx";
 
 export interface IWordTypeContext {
   // word type 列表
@@ -39,13 +43,12 @@ export const useWordTypeContext = () => useContext(WordTypeContext);
 
 export function WordTypeContextProvider(props: { children?: ReactNode }) {
   const list = wordTypeQuery.useQuery().data!;
-  const wordTypeContext = useWordTypeContext();
+  const aRef = useRef<HTMLAnchorElement>(null);
+  const [analyseModal, setAnalyseModal] = useState(false);
 
   const { inputRef, el: inputEl } = useDownloadFile();
   const { setWordTypeModalInfo, el: wordTypeModalEl } = useWordTypeInfoModal(list);
-  const { setSettingVisible, el: wordTypeSettingEl } = useWordTypeSetting(list, wordTypeContext);
 
-  const aRef = useRef<HTMLAnchorElement>(null);
 
   const contextValue = useMemo<IWordTypeContext>(() => ({
     list,
@@ -79,8 +82,10 @@ export function WordTypeContextProvider(props: { children?: ReactNode }) {
       a.download = 'wordTypeConfig.json';
       a.click();
     },
-    dataAnalyse: () => undefined,
-  }), [inputRef, list, setSettingVisible, setWordTypeModalInfo]);
+    dataAnalyse: () => setAnalyseModal(true),
+  }), [inputRef, list, setWordTypeModalInfo]);
+
+  const { setSettingVisible, el: wordTypeSettingEl } = useWordTypeSetting(list, contextValue);
 
   return (
     <WordTypeContext.Provider value={contextValue}>
@@ -89,6 +94,7 @@ export function WordTypeContextProvider(props: { children?: ReactNode }) {
       {inputEl}
       {wordTypeModalEl}
       {wordTypeSettingEl}
+      <DataAnalyseModal visible={analyseModal} setVisible={setAnalyseModal} />
     </WordTypeContext.Provider>
   );
 }
@@ -270,4 +276,115 @@ function useWordTypeSetting(list: WordTypeInfo[], wordTypeContext: IWordTypeCont
       </Modal>
     )
   };
+}
+
+function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean) => void;}) {
+  const { visible, setVisible } = props;
+  const list = wordTypeQuery.useQuery().data!;
+  const { editor } = useEditorContext();
+  const analyse = useMemo(() => {
+    const analyseRecord: Record<string, { count: number, word: string[] }> = {};
+    if (!visible || !editor) {
+      return analyseRecord;
+    }
+    const opArray: Ops = cloneDeep(editor.getContent().deltas[0]?.ops || []);
+    for (let i = 0; i < opArray.length; i++) {
+      const attributes = opArray[i].attributes || {};
+      const keys = Object.keys(attributes).filter(k => k.startsWith('WTK'));
+      for (const key of keys) {
+        const value = attributes[key];
+        if (!value) {
+          continue;
+        }
+        const rec = analyseRecord[key] || { count: 0, word: [] };
+        analyseRecord[key] = rec;
+        let word = opArray[i].insert as string;
+        // 检查后面是否还存在相同的标记
+        for (let j = i + 1; j < opArray.length; j++) {
+          if (!opArray[j].attributes || opArray[j].attributes![key] !== value) {
+            break;
+          }
+          word += opArray[j].insert || '';
+          delete opArray[j].attributes![key];
+        }
+        rec.count++;
+        rec.word.push(word);
+      }
+    }
+    return analyseRecord;
+  }, [visible, editor]);
+  const columns = useMemo<ColumnProps<WordTypeInfo>[]>(() => [
+    {
+      title: '名称',
+      dataIndex: 'name',
+      width: 100,
+      render: (text: string, record: WordTypeInfo) => (
+        <div style={{ textAlign: 'center', backgroundColor: record.backgroundColor, color: record.color}}>
+          {text}
+        </div>
+      ),
+    },
+    {
+      title: 'typeKey',
+      dataIndex: 'typeKey',
+      width: 100,
+    },
+    {
+      title: '描述',
+      dataIndex: 'description',
+      render: (text: string, record: WordTypeInfo) => (
+        <div style={{ backgroundColor: record.backgroundColor, color: record.color}}>
+          {text}
+        </div>
+      ),
+    },
+    {
+      title: '词数统计',
+      dataIndex: '$analyse$',
+      width: 100,
+      render: (_, record: WordTypeInfo) => {
+        const info = analyse[record.typeKey];
+        if (!info?.count) {
+          return <div style={{textAlign: 'center'}}>0</div>
+        }
+        const colorStyle: CSSProperties = {
+          display: 'inline-block',
+          backgroundColor: record.backgroundColor,
+          color: record.color,
+          padding: 5,
+        }
+        const style: CSSProperties = { display: 'inline-block', padding: 5 }
+        return (
+          <Popover
+            style={{ maxWidth: '50vw', maxHeight: '50vh', overflowY: 'auto' }}
+            content={() => (
+              <div style={{padding: 10}}>
+                {info.word.map((value, index) => (
+                  <div style={index % 2 ? style : colorStyle}>{value}</div>
+                ))}
+              </div>
+            )}
+          >
+            <div style={{color: 'blue', textAlign: 'center', fontWeight: 'bolder'}}>{info.count}</div>
+          </Popover>
+        )
+      },
+    },
+  ], [analyse]);
+  return (
+    <Modal
+      visible={visible}
+      closeOnEsc={true}
+      centered={true}
+      title={'数据统计'}
+      width={800}
+      onCancel={() => setVisible(false)}
+      footer={<span />}
+    >
+      <Table
+        columns={columns}
+        dataSource={list}
+      />
+    </Modal>
+  )
 }

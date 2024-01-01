@@ -118,7 +118,11 @@ export function HomeHeader() {
               editorContext.saveFile();
               break;
             case 'file-close':
-              editorContext.closeFile();
+              Modal.confirm({
+                title: '确认关闭当前文档?',
+                centered: true,
+                onOk: () => void editorContext.closeFile(),
+              });
               break;
             case 'word-update':
               wordTypeContext.openWordSetting();

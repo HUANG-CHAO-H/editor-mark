@@ -22,6 +22,8 @@ export interface WordTypeItemProps {
   opArray?: OperationInfo[];
 }
 
+let randomIndex = Date.now();
+
 export function WordTypeItem(props: WordTypeItemProps) {
   const { value: wordTypeInfo, opArray = [] } = props;
   const { editor } = useEditorContext();
@@ -49,7 +51,7 @@ export function WordTypeItem(props: WordTypeItemProps) {
             } else {
               // 没有, 就添加
               state.setAttributes(pos, {
-                [wordTypeInfo.typeKey]: 'true',
+                [wordTypeInfo.typeKey]: String(randomIndex++),
               });
             }
             editor.focus();
