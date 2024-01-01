@@ -29,7 +29,7 @@ const modules: Modules = {
 };
 
 export function MEditor() {
-  const {editor, setEditor} = useEditorContext();
+  const {editor, setEditor, fontSize} = useEditorContext();
   const wordTypeList = wordTypeQuery.useQuery().data!;
   useEffect(() => {
     if (!editor) {
@@ -44,7 +44,7 @@ export function MEditor() {
     <EditorComponent
       editable
       businessKey="doc_sdk_demo"
-      style={{ padding: 5, height: '100%', cursor: 'text' }}
+      style={{ padding: 5, height: '100%', cursor: 'text', fontSize: `${fontSize.toFixed(1)}rem` }}
       modules={modules}
       register={e => [
         new BlockElementDeserializer(),

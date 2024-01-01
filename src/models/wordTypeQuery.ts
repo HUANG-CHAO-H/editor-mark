@@ -169,6 +169,7 @@ export const wordTypeQuery = new QueryHelper(wordTypeLoader, {
 (() => {
   const info = localStorage.getItem('word-type-config');
   if (!info) {
+    wordTypeQuery.setQueryData([], []);
     return;
   }
   const formatV = JSON.parse(info);

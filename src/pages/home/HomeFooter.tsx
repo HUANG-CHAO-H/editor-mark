@@ -14,7 +14,7 @@ export function HomeFooter() {
     if (!editor) {
       return;
     }
-    let timeout: number | undefined;
+    let timeout: NodeJS.Timeout | number | undefined;
     const handler = (event: EditorSelectionChangeEvent) => {
       if (timeout !== undefined) {
         clearTimeout(timeout);

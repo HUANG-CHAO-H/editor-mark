@@ -3,12 +3,11 @@ import {SketchPicker} from "react-color";
 import type {FormApi} from "@douyinfe/semi-ui/lib/es/form";
 import {Button, Form, Modal, Popover, Toast, Tree, withField} from "@douyinfe/semi-ui";
 import {TreeNodeData} from "@douyinfe/semi-ui/lib/es/tree/interface";
-import noop from 'lodash/noop';
+import {IconArrowDown, IconArrowUp, IconClose, IconSetting} from "@douyinfe/semi-icons";
 
 import {createContext} from "../utils";
 import {formatWordTypeInfo, WordTypeInfo, wordTypeQuery} from "../models";
 import {WordTypeItem} from "../components/WordTypeItem";
-import {IconArrowDown, IconArrowUp, IconClose, IconSetting} from "@douyinfe/semi-icons";
 
 export interface IWordTypeContext {
   // word type 列表
@@ -40,16 +39,18 @@ export const useWordTypeContext = () => useContext(WordTypeContext);
 
 export function WordTypeContextProvider(props: { children?: ReactNode }) {
   const list = wordTypeQuery.useQuery().data!;
-  const [settingVisible, setSettingVisible] = useState(false);
-  const [modalInfo, setModalInfo] = useState<{ type: 'create' | 'edit', data: WordTypeInfo }>();
-  const [fileKey, setFileKey] = useState(Number.MIN_SAFE_INTEGER);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const wordTypeContext = useWordTypeContext();
+
+  const { inputRef, el: inputEl } = useDownloadFile();
+  const { setWordTypeModalInfo, el: wordTypeModalEl } = useWordTypeInfoModal(list);
+  const { setSettingVisible, el: wordTypeSettingEl } = useWordTypeSetting(list, wordTypeContext);
+
   const aRef = useRef<HTMLAnchorElement>(null);
 
   const contextValue = useMemo<IWordTypeContext>(() => ({
     list,
     createModal(info?: Partial<WordTypeInfo>) {
-      setModalInfo({
+      setWordTypeModalInfo({
         type: 'create',
         data: formatWordTypeInfo(info || {}),
       })
@@ -60,7 +61,7 @@ export function WordTypeContextProvider(props: { children?: ReactNode }) {
       } else if (index >= list.length) {
         return false;
       }
-      setModalInfo({
+      setWordTypeModalInfo({
         type: 'edit',
         data: list[index]
       });
@@ -79,12 +80,27 @@ export function WordTypeContextProvider(props: { children?: ReactNode }) {
       a.click();
     },
     dataAnalyse: () => undefined,
-  }), [list]);
+  }), [inputRef, list, setSettingVisible, setWordTypeModalInfo]);
 
   return (
     <WordTypeContext.Provider value={contextValue}>
       {props.children}
       <a ref={aRef} />
+      {inputEl}
+      {wordTypeModalEl}
+      {wordTypeSettingEl}
+    </WordTypeContext.Provider>
+  );
+}
+
+function useDownloadFile() {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [fileKey, setFileKey] = useState(Number.MIN_SAFE_INTEGER);
+  return {
+    inputRef,
+    fileKey,
+    setFileKey,
+    el: (
       <input
         key={fileKey}
         type="file"
@@ -117,61 +133,60 @@ export function WordTypeContextProvider(props: { children?: ReactNode }) {
           reader.readAsText(info);
         }}
       />
-      <WordTypeInfoModal type={modalInfo?.type} data={modalInfo?.data} onClose={() => setModalInfo(undefined)}/>
-      <WordTypeSetting visible={settingVisible} setVisible={setSettingVisible}/>
-    </WordTypeContext.Provider>
-  );
+    ),
+  }
 }
 
-function WordTypeInfoModal(props: { type?: 'create' | 'edit', data?: WordTypeInfo, onClose?: () => void }) {
-  const {type, data, onClose = noop} = props;
-  const list = wordTypeQuery.useQuery().data!;
+function useWordTypeInfoModal(list: WordTypeInfo[]) {
+  const [modalInfo, setModalInfo] = useState<{ type: 'create' | 'edit', data: WordTypeInfo }>();
   const [formApi, setFormApi] = useState<FormApi>();
-  return (
-    <Modal
-      visible={Boolean(type)}
-      closeOnEsc={true}
-      centered={true}
-      title={type === 'create' ? '新建' : `${data?.name || ''} 设置`}
-      onOk={() => {
-        if (!formApi || !type) return;
-        formApi.validate().then(values => {
-          const formatV = formatWordTypeInfo(values);
-          if (type === 'create') {
-            wordTypeQuery.run('push', formatV);
-            onClose();
-          } else if (type === 'edit') {
-            wordTypeQuery.run('update', wordTypeQuery.run('getIndexByKey', formatV.typeKey), formatV);
-            onClose();
-          }
-        });
-      }}
-      onCancel={onClose}>
-      <Form key={type || ''} initValues={data} getFormApi={setFormApi}>
-        <Form.Input
-          field="typeKey"
-          label="type key"
-          disabled={type !== 'create'}
-          rules={ type !== 'create' ? undefined : [
-            { validator: (_, v: string) => /^[0-9a-zA-Z]+$/.test(v), message: 'typeKey只能由数字和大小写字母构成' },
-            { validator: (_, v: string) => !list.find(l => l.typeKey === v), message: 'typeKey已存在' },
-          ]}
-        />
-        <Form.Input label="名称" field="name" />
-        <FormColorSelect label="字体颜色" field="color" />
-        <FormColorSelect label="背景颜色" field="backgroundColor" />
-        <Form.TextArea label="描述" field="description" />
-      </Form>
-    </Modal>
-  );
+  return {
+    wordTypeModalInfo: modalInfo,
+    setWordTypeModalInfo: setModalInfo,
+    el: (
+      <Modal
+        visible={Boolean(modalInfo)}
+        closeOnEsc={true}
+        centered={true}
+        title={modalInfo?.type === 'create' ? '新建' : `${modalInfo?.data?.name || ''} 设置`}
+        onOk={() => {
+          if (!formApi || !modalInfo?.type) return;
+          formApi.validate().then(values => {
+            const formatV = formatWordTypeInfo(values);
+            if (modalInfo.type === 'create') {
+              wordTypeQuery.run('push', formatV);
+              setModalInfo(undefined);
+            } else if (modalInfo.type === 'edit') {
+              wordTypeQuery.run('update', wordTypeQuery.run('getIndexByKey', formatV.typeKey), formatV);
+              setModalInfo(undefined);
+            }
+          });
+        }}
+        onCancel={() => setModalInfo(undefined)}>
+        <Form key={modalInfo?.type || ''} initValues={modalInfo?.data} getFormApi={setFormApi}>
+          <Form.Input
+            field="typeKey"
+            label="type key"
+            disabled={modalInfo?.type !== 'create'}
+            rules={modalInfo?.type !== 'create' ? undefined : [
+              { validator: (_, v: string) => /^[0-9a-zA-Z]+$/.test(v), message: 'typeKey只能由数字和大小写字母构成' },
+              { validator: (_, v: string) => !list.find(l => l.typeKey === v), message: 'typeKey已存在' },
+            ]}
+          />
+          <Form.Input label="名称" field="name" />
+          <FormColorSelect label="字体颜色" field="color" />
+          <FormColorSelect label="背景颜色" field="backgroundColor" />
+          <Form.TextArea label="描述" field="description" />
+        </Form>
+      </Modal>
+    ),
+  }
 }
 
-function WordTypeSetting(props: { visible: boolean; setVisible: (value: boolean) => void }) {
-  const { visible, setVisible } = props;
-  const wordTypeContext = useWordTypeContext();
-  const queryList = wordTypeQuery.useQuery().data!;
+function useWordTypeSetting(list: WordTypeInfo[], wordTypeContext: IWordTypeContext) {
+  const [settingVisible, setSettingVisible] = useState(false);
   const treeData = useMemo(() => {
-    return queryList.map<TreeNodeData>(
+    return list.map<TreeNodeData>(
       (l: WordTypeInfo, index: number) => ({
         key: l.typeKey,
         value: l.typeKey,
@@ -212,40 +227,46 @@ function WordTypeSetting(props: { visible: boolean; setVisible: (value: boolean)
         ),
       })
     );
-  }, [queryList, wordTypeContext]);
-  return (
-    <Modal
-      visible={visible}
-      closeOnEsc={true}
-      centered={true}
-      title={'Word 设置'}
-      onOk={() => {
+  }, [list, wordTypeContext]);
+  return {
+    settingVisible,
+    setSettingVisible,
+    el: (
+      <Modal
+        visible={settingVisible}
+        closeOnEsc={true}
+        centered={true}
+        title={'Word 设置'}
+        onOk={() => {
 
-      }}
-      onCancel={() => setVisible(false)}
-      footer={
-        <Button
-          theme="solid"
-          type="primary"
-          style={{ width: '100%', margin: 0 }}
-          block={true}
-          onClick={() => wordTypeContext.createModal({ color: 'black' })}
-        >
-          新增
-        </Button>
-      }
-    >
-      <Tree
-        treeData={treeData}
-        style={{
-          width: '100%',
-          maxHeight: '400px',
-          border: '1px solid var(--semi-color-border)',
         }}
-      />
-    </Modal>
-  );
+        onCancel={() => setSettingVisible(false)}
+        footer={
+          <Button
+            theme="solid"
+            type="primary"
+            style={{ width: '100%', margin: 0 }}
+            block={true}
+            onClick={() => wordTypeContext.createModal({ color: 'black' })}
+          >
+            新增
+          </Button>
+        }
+      >
+        <Tree
+          treeData={treeData}
+          style={{
+            width: '100%',
+            maxHeight: '400px',
+            border: '1px solid var(--semi-color-border)',
+          }}
+        />
+      </Modal>
+    )
+  };
 }
+
+// function useDataAnalyse() {}
 
 function ColorSelect(props: { value?: string, onChange?: (value: string) => void }) {
   return (

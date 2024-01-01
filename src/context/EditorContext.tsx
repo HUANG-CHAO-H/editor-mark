@@ -1,4 +1,4 @@
-import React, {ReactNode, useContext, useMemo, useRef, useState} from "react";
+import React, {ReactNode, useContext, useEffect, useMemo, useRef, useState} from "react";
 import {Toast} from "@douyinfe/semi-ui";
 import type { Editor } from "@editor-kit/core";
 import {DeltaSet} from "@editor-kit/delta";
@@ -6,6 +6,10 @@ import {createContext} from "../utils";
 
 export interface IEditorContext {
   editor: Editor | undefined;
+  // 编辑器中的文本大小
+  fontSize: number;
+  // 设置 fontSize
+  setFontSize: React.Dispatch<React.SetStateAction<number>>;
   // 设置, 更新editor
   setEditor: React.Dispatch<React.SetStateAction<Editor | undefined>>;
   // 文件信息
@@ -23,13 +27,15 @@ export const useEditorContext = () => useContext(EditorContext);
 
 export function EditorContextProvider(props: { children?: ReactNode }) {
   const [editor, setEditor] = useState<Editor>();
-  const [fileInfo, setFileInfo] = useState<File>();
-  const [fileKey, setFileKey] = useState(Number.MIN_SAFE_INTEGER);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const {fontSize, setFontSize} = useFontSize();
+  const { inputRef, fileInfo, el: inputElement } = useOpenFile(editor);
+
   const aRef = useRef<HTMLAnchorElement>(null);
   const contextValue = useMemo(() => ({
     editor,
     setEditor,
+    fontSize,
+    setFontSize,
     fileInfo,
     openFile: () => void inputRef.current?.click(),
     saveFile: () => {
@@ -45,11 +51,45 @@ export function EditorContextProvider(props: { children?: ReactNode }) {
       a.click();
     },
     closeFile: () => void editor?.reset(),
-  }), [editor, fileInfo]);
+  }), [editor, fontSize, setFontSize, fileInfo, inputRef]);
   return (
     <EditorContext.Provider value={contextValue}>
       {props.children}
       <a ref={aRef}/>
+      {inputElement}
+    </EditorContext.Provider>
+  );
+}
+
+const initFontSize = localStorage.getItem('editor-font-size');
+function useFontSize() {
+  const [fontSize, setFontSize] = useState<number>(1);
+  const sizeRef = useRef(fontSize);
+  sizeRef.current = fontSize;
+  useEffect(() => {
+    if (initFontSize) {
+      const num = Number(initFontSize);
+      if (!isNaN(num)) {
+        setFontSize(num);
+      }
+    }
+  }, []);
+  useEffect(() => localStorage.setItem('editor-font-size', fontSize.toFixed(1)), [fontSize]);
+
+  return {fontSize, setFontSize}
+}
+
+function useOpenFile(editor?: Editor) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [fileKey, setFileKey] = useState(Number.MIN_SAFE_INTEGER);
+  const [fileInfo, setFileInfo] = useState<File>();
+  return {
+    inputRef,
+    fileKey,
+    setFileKey,
+    fileInfo,
+    setFileInfo,
+    el: (
       <input
         key={fileKey}
         type="file"
@@ -89,6 +129,6 @@ export function EditorContextProvider(props: { children?: ReactNode }) {
           reader.readAsText(info);
         }}
       />
-    </EditorContext.Provider>
-  );
+    )
+  }
 }

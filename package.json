@@ -25,6 +25,7 @@
     "dataloader": "^2.2.2"
   },
   "devDependencies": {
+    "@types/node": "^20.10.6",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
     "@types/react-color": "^3.0.10",
