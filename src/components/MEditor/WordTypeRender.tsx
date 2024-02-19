@@ -22,7 +22,7 @@ export class WordTypePlugin extends Plugin {
     let backgroundColor = arr[0].backgroundColor;
     for (let i = 1; i < arr.length; i++) {
       color = blendColors(color, arr[i].color);
-      backgroundColor = blendColors(color, arr[i].backgroundColor);
+      backgroundColor = blendColors(backgroundColor, arr[i].backgroundColor);
     }
     context.style = { ...context.style, color, backgroundColor }
     return children;

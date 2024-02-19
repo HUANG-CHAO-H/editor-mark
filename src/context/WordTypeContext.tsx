@@ -322,6 +322,19 @@ function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean)
     }
     return analyseRecord;
   }, [visible, editor]);
+
+  const [effectType, allCount] = useMemo(() => {
+    let _typeCount = 0;
+    let _allCount = 0;
+    for (const value of Object.values(analyse)) {
+      if (value.count) {
+        _typeCount++;
+        _allCount += value.count;
+      }
+    }
+    return [_typeCount, _allCount] as const;
+  }, [analyse]);
+
   const columns = useMemo<ColumnProps<WordTypeInfo>[]>(() => [
     {
       title: '名称',
@@ -348,7 +361,7 @@ function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean)
       ),
     },
     {
-      title: '词数统计',
+      title: '频次统计',
       dataIndex: '$analyse$',
       width: 100,
       render: (_, record: WordTypeInfo) => {
@@ -385,15 +398,12 @@ function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean)
       visible={visible}
       closeOnEsc={true}
       centered={true}
-      title={'数据统计'}
+      title={`数据统计 (有效类型: ${effectType}, 总数统计: ${allCount})`}
       width={800}
       onCancel={() => setVisible(false)}
       footer={<span />}
     >
-      <Table
-        columns={columns}
-        dataSource={list}
-      />
+      <Table columns={columns} dataSource={list} scroll={{ y: window.innerHeight * 0.6 }}/>
     </Modal>
   )
 }
