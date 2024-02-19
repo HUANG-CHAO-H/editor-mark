@@ -55,7 +55,10 @@ export function WordTypeContextProvider(props: { children?: ReactNode }) {
     createModal(info?: Partial<WordTypeInfo>) {
       setWordTypeModalInfo({
         type: 'create',
-        data: formatWordTypeInfo(info || {}),
+        data: formatWordTypeInfo(info || {
+          typeKey: Date.now(),
+          color: 'black',
+        }),
       })
     },
     updateModal(index: number) {
@@ -158,7 +161,10 @@ function useWordTypeInfoModal(list: WordTypeInfo[]) {
         onOk={() => {
           if (!formApi || !modalInfo?.type) return;
           formApi.validate().then(values => {
-            const formatV = formatWordTypeInfo(values);
+            const formatV = formatWordTypeInfo({
+              ...values,
+              typeKey: 'WTK' + (values.typeKey || ''),
+            });
             if (modalInfo.type === 'create') {
               wordTypeQuery.run('push', formatV);
               setModalInfo(undefined);
@@ -173,10 +179,12 @@ function useWordTypeInfoModal(list: WordTypeInfo[]) {
           <Form.Input
             field="typeKey"
             label="type key"
+            addonBefore={modalInfo?.type === 'create' ? 'WTK' : undefined}
             disabled={modalInfo?.type !== 'create'}
             rules={modalInfo?.type !== 'create' ? undefined : [
+              { required: true },
               { validator: (_, v: string) => /^[0-9a-zA-Z]+$/.test(v), message: 'typeKey只能由数字和大小写字母构成' },
-              { validator: (_, v: string) => !list.find(l => l.typeKey === v), message: 'typeKey已存在' },
+              { validator: (_, v: string) => !list.find(l => l.typeKey === `WTK${v}`), message: 'typeKey已存在' },
             ]}
           />
           <Form.Input label="名称" field="name" />
@@ -259,7 +267,7 @@ function useWordTypeSetting(list: WordTypeInfo[], wordTypeContext: IWordTypeCont
             type="primary"
             style={{ width: '100%', margin: 0 }}
             block={true}
-            onClick={() => wordTypeContext.createModal({ color: 'black' })}
+            onClick={() => wordTypeContext.createModal()}
           >
             新增
           </Button>
