@@ -51,9 +51,9 @@ function blendColors(color1: string, color2: string, weight = 0.5) {
   const color2RGB = parseColor(color2);
 
   // 计算混合后的RGB值
-  const blendedR = Math.round((1 - weight) * color1RGB.r + weight * color2RGB.r);
-  const blendedG = Math.round((1 - weight) * color1RGB.g + weight * color2RGB.g);
-  const blendedB = Math.round((1 - weight) * color1RGB.b + weight * color2RGB.b);
+  const blendedR = Math.floor((1 - weight) * color1RGB.r + weight * color2RGB.r);
+  const blendedG = Math.floor((1 - weight) * color1RGB.g + weight * color2RGB.g);
+  const blendedB = Math.floor((1 - weight) * color1RGB.b + weight * color2RGB.b);
 
   return `#${componentToHex(blendedR)}${componentToHex(blendedG)}${componentToHex(blendedB)}`;
 }

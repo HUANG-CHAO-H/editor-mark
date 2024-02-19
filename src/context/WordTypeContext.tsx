@@ -161,14 +161,15 @@ function useWordTypeInfoModal(list: WordTypeInfo[]) {
         onOk={() => {
           if (!formApi || !modalInfo?.type) return;
           formApi.validate().then(values => {
-            const formatV = formatWordTypeInfo({
-              ...values,
-              typeKey: 'WTK' + (values.typeKey || ''),
-            });
             if (modalInfo.type === 'create') {
+              const formatV = formatWordTypeInfo({
+                ...values,
+                typeKey: 'WTK' + (values.typeKey || ''),
+              });
               wordTypeQuery.run('push', formatV);
               setModalInfo(undefined);
             } else if (modalInfo.type === 'edit') {
+              const formatV = formatWordTypeInfo(values);
               wordTypeQuery.run('update', wordTypeQuery.run('getIndexByKey', formatV.typeKey), formatV);
               setModalInfo(undefined);
             }
