@@ -361,8 +361,21 @@ function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean)
       ),
     },
     {
+      title: '频次占比',
+      dataIndex: '$percent$',
+      width: 100,
+      render: (_, record: WordTypeInfo) => {
+        const info = analyse[record.typeKey];
+        return (
+          <div style={{ backgroundColor: record.backgroundColor, color: record.color, textAlign: 'center' }}>
+            {info ? (info.count / allCount * 100).toFixed(2) + '%' : '0'}
+          </div>
+        );
+      },
+    },
+    {
       title: '频次统计',
-      dataIndex: '$analyse$',
+      dataIndex: '$count$',
       width: 100,
       render: (_, record: WordTypeInfo) => {
         const info = analyse[record.typeKey];
@@ -379,6 +392,7 @@ function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean)
         return (
           <Popover
             style={{ maxWidth: '50vw', maxHeight: '50vh', overflowY: 'auto' }}
+            position="bottomRight"
             content={() => (
               <div style={{padding: 10}}>
                 {info.word.map((value, index) => (
@@ -392,18 +406,26 @@ function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean)
         )
       },
     },
-  ], [analyse]);
+  ], [analyse, allCount]);
   return (
     <Modal
       visible={visible}
       closeOnEsc={true}
       centered={true}
-      title={`数据统计 (有效类型: ${effectType}, 总数统计: ${allCount})`}
-      width={800}
+      title={
+        <span>
+          数据统计(有效类型:&nbsp;&nbsp;
+          <span style={{ color: 'green'}}>{effectType}</span>
+          ,总数统计:&nbsp;&nbsp;
+          <span style={{ color: 'green'}}>{allCount}</span>
+          )
+        </span>
+      }
+      width={window.innerWidth * 0.8}
       onCancel={() => setVisible(false)}
       footer={<span />}
     >
-      <Table columns={columns} dataSource={list} scroll={{ y: window.innerHeight * 0.6 }}/>
+      <Table columns={columns} dataSource={list} scroll={{ x: window.innerWidth * 0.6, y: window.innerHeight * 0.6 }}/>
     </Modal>
   )
 }
