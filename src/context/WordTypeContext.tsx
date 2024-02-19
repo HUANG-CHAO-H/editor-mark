@@ -425,7 +425,12 @@ function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean)
       onCancel={() => setVisible(false)}
       footer={<span />}
     >
-      <Table columns={columns} dataSource={list} scroll={{ x: window.innerWidth * 0.6, y: window.innerHeight * 0.6 }}/>
+      <Table
+        columns={columns}
+        dataSource={list}
+        scroll={{ x: window.innerWidth * 0.6, y: window.innerHeight * 0.6 }}
+        pagination={false}
+      />
     </Modal>
   )
 }
