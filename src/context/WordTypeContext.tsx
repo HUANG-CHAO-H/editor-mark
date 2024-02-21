@@ -257,7 +257,7 @@ function useWordTypeSetting(list: WordTypeInfo[], wordTypeContext: IWordTypeCont
         visible={settingVisible}
         closeOnEsc={true}
         centered={true}
-        title={'Word 设置'}
+        title={'元话语分类 设置'}
         onOk={() => {
 
         }}

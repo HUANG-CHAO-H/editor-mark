@@ -46,27 +46,27 @@ export function HomeHeader() {
     },
     {
       itemKey: 'word',
-      text: 'Word',
+      text: '元话语分类',
       icon: <IconArticle />,
       items: [
         {
           itemKey: 'word-update',
-          text: '管理Word',
+          text: '管理分类',
           icon: <IconSimilarity />,
         },
         {
           itemKey: 'word-open',
-          text: '打开Word配置',
+          text: '打开分类配置',
           icon: <IconFolderOpen />,
         },
         {
           itemKey: 'word-save',
-          text: '保存Word配置',
+          text: '保存分类配置',
           icon: <IconSave />,
         },
         {
           itemKey: 'word-close',
-          text: '关闭Word配置',
+          text: '关闭分类',
           icon: <IconClose />,
         },
       ]
