@@ -39,7 +39,7 @@ export function HomeFooter() {
       return null;
     }
     return list.filter(l => keySet.has(l.typeKey)).map(l => (
-      <div style={{ color: l.color, backgroundColor: l.backgroundColor }}>{l.name}</div>
+      <div key={l.typeKey} style={{ color: l.color, backgroundColor: l.backgroundColor }}>{l.name}</div>
     ));
   }, [list, keySet]);
   return (

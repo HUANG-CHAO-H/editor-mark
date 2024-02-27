@@ -1,4 +1,4 @@
-import {ReactNode} from "react";
+import {ReactNode, useMemo} from "react";
 import {IContentState} from "@editor-kit/core";
 import {Button} from "@douyinfe/semi-ui";
 import {useEditorContext} from "../../context";
@@ -19,14 +19,42 @@ export interface WordTypeItemProps {
   // 数据
   value: WordTypeInfo;
   // 操作集合
-  opArray?: OperationInfo[];
+  opArray?: (OperationInfo | undefined)[];
 }
 
 let randomIndex = Date.now();
 
 export function WordTypeItem(props: WordTypeItemProps) {
-  const { value: wordTypeInfo, opArray = [] } = props;
+  const { value: wordTypeInfo, opArray } = props;
   const { editor } = useEditorContext();
+
+  const opList = useMemo<ReactNode | ReactNode[]>(() => {
+    if (!opArray?.length) {
+      return null;
+    }
+    const arr: ReactNode[] = [];
+    for (const o of opArray) {
+      if (!o) {
+        continue;
+      } else if (o.hidden) {
+        arr.push(<span key={o.key}/>);
+      } else {
+        arr.push(
+          <Button
+            key={o.key}
+            theme="borderless"
+            type="secondary"
+            size="small"
+            disabled={o.disabled}
+            icon={o.icon}
+            aria-label={o.ariaLabel}
+            onClick={o.onClick}
+          />
+        );
+      }
+    }
+    return arr;
+  }, [opArray]);
   return (
     <>
       <div
@@ -62,18 +90,7 @@ export function WordTypeItem(props: WordTypeItemProps) {
           {props.value.name}
         </div>
         <div className="word-type-item-operation">
-          {opArray.map(o => o.hidden ? <span key={o.key} /> : (
-            <Button
-              key={o.key}
-              theme="borderless"
-              type="secondary"
-              size="small"
-              disabled={o.disabled}
-              icon={o.icon}
-              aria-label={o.ariaLabel}
-              onClick={o.onClick}
-            />
-          ))}
+          {opList}
         </div>
       </div>
     </>

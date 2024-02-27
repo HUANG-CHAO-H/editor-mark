@@ -14,7 +14,7 @@ export class WordTypePlugin extends Plugin {
   render(context: IRenderContext){
     const { attributes, children } = context;
     const keys = Object.keys(attributes).filter(k => k.startsWith(WORD_TYPE_KEY_PRE) && attributes[k]);
-    const arr = this.list.filter(l => !l.hidden && keys.includes(l.typeKey));
+    const arr = this.list.filter(l => keys.includes(l.typeKey));
     if (!arr.length) {
       return children;
     }
@@ -31,11 +31,28 @@ export class WordTypePlugin extends Plugin {
   constructor(editor: Editor, wordTypeList: WordTypeInfo[]) {
     super();
     this.editor = editor;
-    this.list = wordTypeList;
+    const array: WordTypeInfo[] = [];
+    for (const item of wordTypeList) {
+      const children = item.children || [];
+      array.push({...item, children: undefined });
+      for (const child of children) {
+        array.push({...child, children: undefined });
+      }
+    }
+    this.list = array.filter(v => !v.hidden);
   }
 
   reset() {
-    this.list = wordTypeQuery.getQueryData() || [];
+    const wordTypeList = wordTypeQuery.getQueryData() || [];
+    const array: WordTypeInfo[] = [];
+    for (const item of wordTypeList) {
+      const children = item.children || [];
+      array.push({...item, children: undefined });
+      for (const child of children) {
+        array.push({...child, children: undefined });
+      }
+    }
+    this.list = array.filter(v => !v.hidden);
   }
 }
 

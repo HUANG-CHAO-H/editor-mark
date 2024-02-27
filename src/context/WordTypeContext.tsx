@@ -3,7 +3,14 @@ import cloneDeep from 'lodash/cloneDeep';
 import type {FormApi} from "@douyinfe/semi-ui/lib/es/form";
 import {Button, Form, Modal, Toast, Tree, Table, Popover, TextArea} from "@douyinfe/semi-ui";
 import {TreeNodeData} from "@douyinfe/semi-ui/lib/es/tree/interface";
-import {IconArrowDown, IconArrowUp, IconClose, IconSetting, IconCopy} from "@douyinfe/semi-icons";
+import {
+  IconArrowDown,
+  IconArrowUp,
+  IconClose,
+  IconSetting,
+  IconCopy,
+  IconPlus,
+} from "@douyinfe/semi-icons";
 import type {ColumnProps} from "@douyinfe/semi-ui/lib/es/table/interface";
 import type {Ops} from "@editor-kit/delta/dist/interface";
 
@@ -20,12 +27,12 @@ export interface IWordTypeContext {
    * 唤起创建type对话框
    * @param info  新建时的初始化数据
    */
-  createModal: (info?: Partial<WordTypeInfo>) => void;
+  createModal: (info?: Partial<WordTypeInfo>, parentIndex?: number) => void;
   /**
    * 唤起更新type对话框
    * @param index 要更新的元素的索引
    */
-  updateModal: (index: number) => void;
+  updateModal: (index: number, parentIndex?: number) => void;
   /**
    * 打开word设置弹窗
    */
@@ -52,16 +59,17 @@ export function WordTypeContextProvider(props: { children?: ReactNode }) {
 
   const contextValue = useMemo<IWordTypeContext>(() => ({
     list,
-    createModal(info?: Partial<WordTypeInfo>) {
+    createModal(info?: Partial<WordTypeInfo>, parentIndex?: number) {
       setWordTypeModalInfo({
         type: 'create',
+        parentIndex,
         data: formatWordTypeInfo(info || {
           typeKey: Date.now(),
           color: 'black',
         }),
       })
     },
-    updateModal(index: number) {
+    updateModal(index: number, parentIndex?: number) {
       if (index < 0) {
         return false;
       } else if (index >= list.length) {
@@ -69,7 +77,9 @@ export function WordTypeContextProvider(props: { children?: ReactNode }) {
       }
       setWordTypeModalInfo({
         type: 'edit',
-        data: list[index]
+        index,
+        parentIndex,
+        data: parentIndex === undefined ? list[index] : list[parentIndex].children![index]
       });
       return true;
     },
@@ -149,7 +159,7 @@ function useDownloadFile() {
 }
 
 function useWordTypeInfoModal(list: WordTypeInfo[]) {
-  const [modalInfo, setModalInfo] = useState<{ type: 'create' | 'edit', data: WordTypeInfo }>();
+  const [modalInfo, setModalInfo] = useState<{ type: 'create' | 'edit', index?: number, parentIndex?: number, data: WordTypeInfo }>();
   const [formApi, setFormApi] = useState<FormApi>();
   return {
     wordTypeModalInfo: modalInfo,
@@ -168,11 +178,11 @@ function useWordTypeInfoModal(list: WordTypeInfo[]) {
                 ...values,
                 typeKey: 'WTK' + (values.typeKey || ''),
               });
-              wordTypeQuery.run('push', formatV);
+              wordTypeQuery.run('push', formatV, modalInfo.parentIndex);
               setModalInfo(undefined);
             } else if (modalInfo.type === 'edit') {
               const formatV = formatWordTypeInfo(values);
-              wordTypeQuery.run('update', wordTypeQuery.run('getIndexByKey', formatV.typeKey), formatV);
+              wordTypeQuery.run('update', modalInfo.index!, formatV, modalInfo.parentIndex);
               setModalInfo(undefined);
             }
           });
@@ -187,7 +197,10 @@ function useWordTypeInfoModal(list: WordTypeInfo[]) {
             rules={modalInfo?.type !== 'create' ? undefined : [
               { required: true },
               { validator: (_, v: string) => /^[0-9a-zA-Z]+$/.test(v), message: 'typeKey只能由数字和大小写字母构成' },
-              { validator: (_, v: string) => !list.find(l => l.typeKey === `WTK${v}`), message: 'typeKey已存在' },
+              {
+                validator: (_, v: string) => !list.find(l => l.typeKey === `WTK${v}` || l.children?.find(v => v.typeKey === `WTK${v}`)),
+                message: 'typeKey已存在',
+              },
             ]}
           />
           <Form.Input label="名称" field="name" />
@@ -209,47 +222,61 @@ function useWordTypeInfoModal(list: WordTypeInfo[]) {
 function useWordTypeSetting(list: WordTypeInfo[], wordTypeContext: IWordTypeContext) {
   const [settingVisible, setSettingVisible] = useState(false);
   const treeData = useMemo(() => {
-    return list.map<TreeNodeData>(
-      (l: WordTypeInfo, index: number) => ({
-        key: l.typeKey,
-        value: l.typeKey,
-        label: (
-          <WordTypeItem
-            value={l}
-            opArray={[
-              {
-                key: '上移',
-                ariaLabel: '上移',
-                icon: <IconArrowUp />,
-                onClick: () => wordTypeQuery.run('toFront', index),
-              },
-              {
-                key: '下移',
-                ariaLabel: '下移',
-                icon: <IconArrowDown />,
-                onClick: () => wordTypeQuery.run('toEnd', index),
-              },
-              {
-                key: '设置',
-                ariaLabel: '设置',
-                icon: <IconSetting />,
-                onClick: () => wordTypeContext.updateModal(index),
-              },
-              {
-                key: '删除',
-                ariaLabel: '删除',
-                icon: <IconClose />,
-                onClick: () => Modal.confirm({
-                  title: `确认删除 ${l.name} ?`,
-                  centered: true,
-                  onOk: () => void wordTypeQuery.run('delete', index),
-                }),
-              },
-            ]}
-          />
-        ),
-      })
-    );
+    return translateTreeData(list, wordTypeContext);
+    function translateTreeData(source: WordTypeInfo[], wordTypeContext: IWordTypeContext, parentIndex?: number) {
+      const array: (TreeNodeData & WordTypeInfo)[] = [];
+      for (let i = 0; i < source.length; i++) {
+        const v = source[i];
+        array.push({
+          ...v,
+          key: v.typeKey,
+          label: (
+            <WordTypeItem
+              value={v}
+              opArray={[
+                parentIndex ? undefined : {
+                  key: '新增',
+                  ariaLabel: '新增',
+                  icon: <IconPlus />,
+                  onClick: () => wordTypeContext.createModal(undefined, i),
+                },
+                i <= 0 ? undefined : {
+                  key: '上移',
+                  ariaLabel: '上移',
+                  icon: <IconArrowUp />,
+                  onClick: () => wordTypeQuery.run('toFront', i, parentIndex),
+                },
+                i >= source.length - 1 ? undefined : {
+                  key: '下移',
+                  ariaLabel: '下移',
+                  icon: <IconArrowDown />,
+                  onClick: () => wordTypeQuery.run('toEnd', i, parentIndex),
+                },
+                {
+                  key: '设置',
+                  ariaLabel: '设置',
+                  icon: <IconSetting />,
+                  onClick: () => wordTypeContext.updateModal(i, parentIndex),
+                },
+                {
+                  key: '删除',
+                  ariaLabel: '删除',
+                  icon: <IconClose />,
+                  onClick: () => Modal.confirm({
+                    title: `确认删除 ${v.name} ?`,
+                    centered: true,
+                    onOk: () => void wordTypeQuery.run('delete', i, parentIndex),
+                  }),
+                },
+              ]}
+            />
+          ),
+          isLeaf: !v.children,
+          children: v.children ? translateTreeData(v.children, wordTypeContext, i) : undefined,
+        });
+      }
+      return array;
+    }
   }, [list, wordTypeContext]);
   return {
     settingVisible,
@@ -260,9 +287,7 @@ function useWordTypeSetting(list: WordTypeInfo[], wordTypeContext: IWordTypeCont
         closeOnEsc={true}
         centered={true}
         title={'元话语分类 设置'}
-        onOk={() => {
-
-        }}
+        width={'50vw'}
         onCancel={() => setSettingVisible(false)}
         footer={
           <Button
@@ -278,6 +303,7 @@ function useWordTypeSetting(list: WordTypeInfo[], wordTypeContext: IWordTypeCont
       >
         <Tree
           treeData={treeData}
+          expandAction={'doubleClick'}
           style={{
             width: '100%',
             maxHeight: '400px',
