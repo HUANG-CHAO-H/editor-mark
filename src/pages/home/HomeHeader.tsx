@@ -12,7 +12,10 @@ import {
   IconBox,
   IconPlus,
   IconMinus,
+  IconEyeClosed,
+  IconEyeOpened,
 } from '@douyinfe/semi-icons';
+import { IconToken } from '@douyinfe/semi-icons-lab';
 import type {NavItems} from "@douyinfe/semi-ui/lib/es/navigation";
 import {useEditorContext, useWordTypeContext} from "../../context";
 import {wordTypeQuery} from "../../models";
@@ -68,6 +71,15 @@ export function HomeHeader() {
           itemKey: 'word-close',
           text: '关闭分类',
           icon: <IconClose />,
+        },
+        {
+          itemKey: 'word-batch',
+          text: '批量操作',
+          icon: <IconToken />,
+          items: [
+            { itemKey: 'word-batch-show', text: '一键显示', icon: <IconEyeOpened /> },
+            { itemKey: 'word-batch-hide', text: '一键隐藏', icon: <IconEyeClosed /> },
+          ],
         },
       ]
     },
@@ -139,6 +151,12 @@ export function HomeHeader() {
                 centered: true,
                 onOk: () => void wordTypeQuery.setQueryData([], []),
               });
+              break;
+            case 'word-batch-show':
+              wordTypeQuery.run('showAll');
+              break;
+            case 'word-batch-hide':
+              wordTypeQuery.run('hideAll');
               break;
             case 'data-analyse':
               wordTypeContext.dataAnalyse();

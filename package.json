@@ -12,6 +12,7 @@
   "dependencies": {
     "@douyinfe/semi-ui": "^2.47.0",
     "@douyinfe/semi-icons": "^2.48.0",
+    "@douyinfe/semi-icons-lab": "^2.53.2",
     "@editor-kit/core": "^4.111.0",
     "@editor-kit/lite": "^4.111.0",
     "@editor-kit/delta": "^4.111.0",

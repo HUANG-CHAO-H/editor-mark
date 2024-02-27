@@ -133,10 +133,24 @@ export const wordTypeQuery = new QueryHelper(wordTypeLoader, {
   },
 
   /**
+   * 隐藏所有标签类型
+   */
+  hideAll(): void {
+    return wordTypeQuery.run('batchUpdate', v => ({ ... v, hidden: true }));
+  },
+
+  /**
    * 展示目标标签类型
    */
   show(index: number): boolean {
     return wordTypeQuery.run('update', index, { hidden: undefined });
+  },
+
+  /**
+   * 显示所有标签类型
+   */
+  showAll(): void {
+    return wordTypeQuery.run('batchUpdate', v => ({ ... v, hidden: undefined }));
   },
 
   /**
@@ -147,7 +161,7 @@ export const wordTypeQuery = new QueryHelper(wordTypeLoader, {
   ) {
     const oldV = wordTypeQuery.getQueryData();
     if (!oldV?.length) {
-      return oldV;
+      return;
     }
     const arr: WordTypeInfo[] = Array(oldV.length);
     let hasChange = false;
@@ -162,7 +176,6 @@ export const wordTypeQuery = new QueryHelper(wordTypeLoader, {
     if (hasChange) {
       wordTypeQuery.setQueryData([], arr);
     }
-    return true;
   },
 });
 
