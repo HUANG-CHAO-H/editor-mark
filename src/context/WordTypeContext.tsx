@@ -366,7 +366,7 @@ function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean)
         </div>
       ),
       dataIndex: 'name',
-      width: 100,
+      width: 200,
       render: (text: string, record: WordTypeInfo) => (
         <div style={{ textAlign: 'center', backgroundColor: record.backgroundColor, color: record.color}}>
           {text}

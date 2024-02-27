@@ -117,7 +117,7 @@ export function HomeHeader() {
         mode={'horizontal'}
         header={{
           logo: <IconSemiLogo style={{ height: '36px', fontSize: 36 }} />,
-          text: '文本标记'
+          text: '元话语标记'
         }}
         items={items}
         selectedKeys={[]}
