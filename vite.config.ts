@@ -6,4 +6,5 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   // publicDir: path.resolve(__dirname, 'dist/static'),
+  base: '/editor-mark',
 })

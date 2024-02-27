@@ -50,7 +50,9 @@ export function EditorContextProvider(props: { children?: ReactNode }) {
       const data = editor.getContent().deltas;
       const blob = new Blob([JSON.stringify(data)], { type: 'application/json;charset=utf-8'});
       a.href = URL.createObjectURL(blob);
-      a.download = fileInfo?.name || 'word-text.json';
+      const time = new Date();
+      const timeString = `${time.getFullYear()}-${time.getMonth() + 1}-${time.getDate()}`;
+      a.download = fileInfo?.name || `标记文本-${timeString}.json`;
       a.click();
     },
     closeFile: () => void editor?.reset(),

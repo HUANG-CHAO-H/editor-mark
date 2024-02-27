@@ -1,13 +1,13 @@
 import {CSSProperties, ReactNode, useContext, useMemo, useRef, useState} from "react";
 import cloneDeep from 'lodash/cloneDeep';
 import type {FormApi} from "@douyinfe/semi-ui/lib/es/form";
-import {Button, Form, Modal, Toast, Tree, Table, Popover} from "@douyinfe/semi-ui";
+import {Button, Form, Modal, Toast, Tree, Table, Popover, TextArea} from "@douyinfe/semi-ui";
 import {TreeNodeData} from "@douyinfe/semi-ui/lib/es/tree/interface";
-import {IconArrowDown, IconArrowUp, IconClose, IconSetting} from "@douyinfe/semi-icons";
+import {IconArrowDown, IconArrowUp, IconClose, IconSetting, IconCopy} from "@douyinfe/semi-icons";
 import type {ColumnProps} from "@douyinfe/semi-ui/lib/es/table/interface";
 import type {Ops} from "@editor-kit/delta/dist/interface";
 
-import {createContext} from "../utils";
+import {createContext, useCacheRef} from "../utils";
 import {formatWordTypeInfo, WordTypeInfo, wordTypeQuery} from "../models";
 import {WordTypeItem} from "../components/WordTypeItem";
 import {FormColorSelect} from "../components/ColorSelect";
@@ -82,7 +82,9 @@ export function WordTypeContextProvider(props: { children?: ReactNode }) {
       }
       const blob = new Blob([JSON.stringify(list)], { type: 'application/json;charset=utf-8'});
       a.href = URL.createObjectURL(blob);
-      a.download = 'wordTypeConfig.json';
+      const time = new Date();
+      const timeString = `${time.getFullYear()}-${time.getMonth() + 1}-${time.getDate()}`;
+      a.download = `元话语分类配置-${timeString}.json`;
       a.click();
     },
     dataAnalyse: () => setAnalyseModal(true),
@@ -292,9 +294,9 @@ function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean)
   const list = wordTypeQuery.useQuery().data!;
   const { editor } = useEditorContext();
   const analyse = useMemo(() => {
-    const analyseRecord: Record<string, { count: number, word: string[] }> = {};
+    const map = new Map<string, {count: number; word: string[]}>();
     if (!visible || !editor) {
-      return analyseRecord;
+      return map;
     }
     const opArray: Ops = cloneDeep(editor.getContent().deltas[0]?.ops || []);
     for (let i = 0; i < opArray.length; i++) {
@@ -305,8 +307,10 @@ function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean)
         if (!value) {
           continue;
         }
-        const rec = analyseRecord[key] || { count: 0, word: [] };
-        analyseRecord[key] = rec;
+        let rec = map.get(key);
+        if (!rec) {
+          map.set(key, rec = { count: 0, word: [] });
+        }
         let word = opArray[i].insert as string;
         // 检查后面是否还存在相同的标记
         for (let j = i + 1; j < opArray.length; j++) {
@@ -320,8 +324,26 @@ function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean)
         rec.word.push(word);
       }
     }
-    return analyseRecord;
+    return map;
   }, [visible, editor]);
+
+  const copyFnRef = useCacheRef((key: string) => {
+    let text = '';
+    if (key === 'name') {
+      text = list.map(v => v.name).join('\n');
+    } else if (key === '$count$') {
+      text = list.map(v => analyse.get(v.typeKey)?.count || 0).join('\n');
+    }
+    if (!text) {
+      Toast.warning('内容为空');
+      return;
+    }
+    Modal.info({
+      title: '手动复制内容到剪切板',
+      width: 500,
+      content: <TextArea value={text} autosize={{ minRows: 1, maxRows: 10 }} />,
+    });
+  });
 
   const [effectType, allCount] = useMemo(() => {
     let _typeCount = 0;
@@ -337,7 +359,12 @@ function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean)
 
   const columns = useMemo<ColumnProps<WordTypeInfo>[]>(() => [
     {
-      title: '名称',
+      title: (
+        <div style={{display: 'flex', alignItems: 'center' }}>
+          名称
+          <IconCopy style={{ cursor: 'pointer', color: 'blue' }} onClick={() => copyFnRef.current('name')}/>
+        </div>
+      ),
       dataIndex: 'name',
       width: 100,
       render: (text: string, record: WordTypeInfo) => (
@@ -365,7 +392,7 @@ function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean)
       dataIndex: '$percent$',
       width: 100,
       render: (_, record: WordTypeInfo) => {
-        const info = analyse[record.typeKey];
+        const info = analyse.get(record.typeKey);
         return (
           <div style={{ backgroundColor: record.backgroundColor, color: record.color, textAlign: 'center' }}>
             {info ? (info.count / allCount * 100).toFixed(2) + '%' : '0'}
@@ -374,11 +401,16 @@ function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean)
       },
     },
     {
-      title: '频次统计',
+      title: (
+        <div style={{display: 'flex', alignItems: 'center' }}>
+          频次统计
+          <IconCopy style={{ cursor: 'pointer', color: 'blue' }} onClick={() => copyFnRef.current('$count$')}/>
+        </div>
+      ),
       dataIndex: '$count$',
-      width: 100,
+      width: 120,
       render: (_, record: WordTypeInfo) => {
-        const info = analyse[record.typeKey];
+        const info = analyse.get(record.typeKey);
         if (!info?.count) {
           return <div style={{textAlign: 'center'}}>0</div>
         }
@@ -388,10 +420,10 @@ function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean)
           color: record.color,
           padding: 5,
         }
-        const style: CSSProperties = { display: 'inline-block', padding: 5 }
+        const style: CSSProperties = {display: 'inline-block', padding: 5}
         return (
           <Popover
-            style={{ maxWidth: '50vw', maxHeight: '50vh', overflowY: 'auto' }}
+            style={{maxWidth: '50vw', maxHeight: '50vh', overflowY: 'auto'}}
             position="bottomRight"
             content={() => (
               <div style={{padding: 10}}>
