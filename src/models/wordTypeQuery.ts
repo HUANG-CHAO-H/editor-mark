@@ -303,6 +303,26 @@ export const wordTypeQuery = new QueryHelper(wordTypeLoader, {
     }
     return wordTypeQuery.run('batchUpdate', (v, _ , p) => p === parentIndex ? v : ({ ...v, hidden: undefined }));
   },
+
+  flatArray(): Omit<WordTypeInfo, 'children'>[] {
+    const list = wordTypeQuery.getQueryData();
+    if (!list) {
+      return [];
+    }
+    const record = wordTypeQuery.getWeakCache(list);
+    if (record['flatArray']) {
+      return record['flatArray'];
+    }
+    const array: Omit<WordTypeInfo, 'children'>[] = [];
+    for (const item of list) {
+      const children = item.children || [];
+      array.push({...item, children: undefined } as any);
+      for (const child of children) {
+        array.push({...child, children: undefined } as any);
+      }
+    }
+    return record['flatArray'] = array;
+  }
 });
 
 (() => {

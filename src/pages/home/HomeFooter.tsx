@@ -8,7 +8,7 @@ import './style.less';
 
 export function HomeFooter() {
   const {editor} = useEditorContext();
-  const list = wordTypeQuery.useQuery().data!;
+  const list = wordTypeQuery.run('flatArray');
   const [keySet, setKeySet] = useState<Set<string>>();
   useEffect(() => {
     if (!editor) {
@@ -38,7 +38,7 @@ export function HomeFooter() {
     if (!keySet?.size || !list.length) {
       return null;
     }
-    return list.filter(l => keySet.has(l.typeKey)).map(l => (
+    return list.filter(l => !l.hidden && keySet.has(l.typeKey)).map(l => (
       <div key={l.typeKey} style={{ color: l.color, backgroundColor: l.backgroundColor }}>{l.name}</div>
     ));
   }, [list, keySet]);

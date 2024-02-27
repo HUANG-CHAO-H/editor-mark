@@ -43,16 +43,7 @@ export class WordTypePlugin extends Plugin {
   }
 
   reset() {
-    const wordTypeList = wordTypeQuery.getQueryData() || [];
-    const array: WordTypeInfo[] = [];
-    for (const item of wordTypeList) {
-      const children = item.children || [];
-      array.push({...item, children: undefined });
-      for (const child of children) {
-        array.push({...child, children: undefined });
-      }
-    }
-    this.list = array.filter(v => !v.hidden);
+    this.list = wordTypeQuery.run('flatArray').filter(v => !v.hidden);
   }
 }
 
