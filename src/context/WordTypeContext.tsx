@@ -348,7 +348,7 @@ function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean)
   const [effectType, allCount] = useMemo(() => {
     let _typeCount = 0;
     let _allCount = 0;
-    for (const value of Object.values(analyse)) {
+    for (const [, value] of analyse) {
       if (value.count) {
         _typeCount++;
         _allCount += value.count;
@@ -379,28 +379,6 @@ function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean)
       width: 100,
     },
     {
-      title: '描述',
-      dataIndex: 'description',
-      render: (text: string, record: WordTypeInfo) => (
-        <div style={{ backgroundColor: record.backgroundColor, color: record.color}}>
-          {text}
-        </div>
-      ),
-    },
-    {
-      title: '频次占比',
-      dataIndex: '$percent$',
-      width: 100,
-      render: (_, record: WordTypeInfo) => {
-        const info = analyse.get(record.typeKey);
-        return (
-          <div style={{ backgroundColor: record.backgroundColor, color: record.color, textAlign: 'center' }}>
-            {info ? (info.count / allCount * 100).toFixed(2) + '%' : '0'}
-          </div>
-        );
-      },
-    },
-    {
       title: (
         <div style={{display: 'flex', alignItems: 'center' }}>
           频次统计
@@ -424,7 +402,7 @@ function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean)
         return (
           <Popover
             style={{maxWidth: '50vw', maxHeight: '50vh', overflowY: 'auto'}}
-            position="bottomRight"
+            position="bottomLeft"
             content={() => (
               <div style={{padding: 10}}>
                 {info.word.map((value, index) => (
@@ -437,6 +415,28 @@ function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean)
           </Popover>
         )
       },
+    },
+    {
+      title: '频次占比',
+      dataIndex: '$percent$',
+      width: 100,
+      render: (_, record: WordTypeInfo) => {
+        const info = analyse.get(record.typeKey);
+        return (
+          <div style={{ backgroundColor: record.backgroundColor, color: record.color, textAlign: 'center' }}>
+            {info ? (info.count / allCount * 100).toFixed(2) + '%' : '0'}
+          </div>
+        );
+      },
+    },
+    {
+      title: '描述',
+      dataIndex: 'description',
+      render: (text: string, record: WordTypeInfo) => (
+        <div style={{ backgroundColor: record.backgroundColor, color: record.color}}>
+          {text}
+        </div>
+      ),
     },
   ], [analyse, allCount]);
   return (
