@@ -1,3 +1,3 @@
-export * from './EditorContext.tsx';
-export * from './WordTypeContext.tsx';
+export * from './EditorContext';
+export * from './WordTypeProvider';
 export * from './QueryProvider';

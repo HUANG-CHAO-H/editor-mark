@@ -217,7 +217,7 @@ export const wordTypeQuery = new QueryHelper(wordTypeLoader, {
       for (let j = 0; j < children.length; j++) {
         childArr[j] = updater(children[j], j, i);
         if (isEqual(children[j], childArr[j])) {
-          children[j] = childArr[j];
+          childArr[j] = children[j];
         } else {
           hasChildrenChange = true;
           hasChange = true;
@@ -226,7 +226,7 @@ export const wordTypeQuery = new QueryHelper(wordTypeLoader, {
       if (hasChildrenChange) {
         arr[i] = {
           ...arr[i],
-          children,
+          children: childArr,
         }
       }
     }

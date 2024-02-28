@@ -2,18 +2,20 @@ import { HomeHeader } from './HomeHeader.tsx';
 import { HomeLeft } from './HomeLeft.tsx';
 import { HomeRight } from './HomeRight.tsx';
 import { HomeFooter } from './HomeFooter.tsx';
+import { useSize } from '../../utils';
 
 export function Home() {
+  const [ref, size] = useSize<HTMLDivElement>({ heightType: 'offset', defaultHeight: 40 })
   return (
-    <div style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
-      <div style={{ height: 60, overflow: 'hidden' }}><HomeHeader /></div>
-      <div style={{ display: 'flex', flexDirection: 'row', width: '100%', height: 'calc(100% - 100px)' }}>
-        <div style={{ width: 300, height: '100%', overflow: 'hidden' }}>
+    <div className="home-container">
+      <div className="home-header"><HomeHeader /></div>
+      <div className="home-main" style={{ height: `calc(100vh - 60px - ${size.height}px)` }}>
+        <div>
           <HomeLeft />
         </div>
-        <div style={{ width: 'calc(100% - 300px)', height: '100%', overflow: 'hidden' }}><HomeRight /></div>
+        <div><HomeRight /></div>
       </div>
-      <div style={{ height: 40, overflow: 'hidden' }}><HomeFooter /></div>
+      <div className="home-footer" ref={ref}><HomeFooter /></div>
     </div>
   );
 }

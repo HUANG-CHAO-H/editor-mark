@@ -38,12 +38,12 @@ export function HomeFooter() {
     if (!keySet?.size || !list.length) {
       return null;
     }
-    return list.filter(l => !l.hidden && keySet.has(l.typeKey)).map(l => (
+    return list.filter(l => keySet.has(l.typeKey)).map(l => (
       <div key={l.typeKey} style={{ color: l.color, backgroundColor: l.backgroundColor }}>{l.name}</div>
     ));
   }, [list, keySet]);
   return (
-    <div className="home-footer">
+    <div className="home-footer-container">
       {content}
     </div>
   )

@@ -1,24 +1,20 @@
-import {CSSProperties, ReactNode, useContext, useMemo, useRef, useState} from "react";
-import cloneDeep from 'lodash/cloneDeep';
+import {ReactNode, useContext, useMemo, useRef, useState} from "react";
 import type {FormApi} from "@douyinfe/semi-ui/lib/es/form";
-import {Button, Form, Modal, Toast, Tree, Table, Popover, TextArea} from "@douyinfe/semi-ui";
+import {Button, Form, Modal, Toast, Tree } from "@douyinfe/semi-ui";
 import {TreeNodeData} from "@douyinfe/semi-ui/lib/es/tree/interface";
 import {
   IconArrowDown,
   IconArrowUp,
   IconClose,
   IconSetting,
-  IconCopy,
   IconPlus,
 } from "@douyinfe/semi-icons";
-import type {ColumnProps} from "@douyinfe/semi-ui/lib/es/table/interface";
-import type {Ops} from "@editor-kit/delta/dist/interface";
 
-import {createContext, useCacheRef} from "../utils";
-import {formatWordTypeInfo, WordTypeInfo, wordTypeQuery} from "../models";
-import {WordTypeItem} from "../components/WordTypeItem";
-import {FormColorSelect} from "../components/ColorSelect";
-import {useEditorContext} from "./EditorContext.tsx";
+import { createContext } from "../../utils";
+import { formatWordTypeInfo, WordTypeInfo, wordTypeQuery } from "../../models";
+import { WordTypeItem } from "../../components/WordTypeItem";
+import { FormColorSelect } from "../../components/ColorSelect";
+import { DataAnalyseModal } from './DataAnalyseModal';
 
 export interface IWordTypeContext {
   // word type 列表
@@ -313,182 +309,4 @@ function useWordTypeSetting(list: WordTypeInfo[], wordTypeContext: IWordTypeCont
       </Modal>
     )
   };
-}
-
-function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean) => void;}) {
-  const { visible, setVisible } = props;
-  const list = wordTypeQuery.run('flatArray');
-  const { editor } = useEditorContext();
-  const analyse = useMemo(() => {
-    const map = new Map<string, {count: number; word: string[]}>();
-    if (!visible || !editor) {
-      return map;
-    }
-    const opArray: Ops = cloneDeep(editor.getContent().deltas[0]?.ops || []);
-    for (let i = 0; i < opArray.length; i++) {
-      const attributes = opArray[i].attributes || {};
-      const keys = Object.keys(attributes).filter(k => k.startsWith('WTK'));
-      for (const key of keys) {
-        const value = attributes[key];
-        if (!value) {
-          continue;
-        }
-        let rec = map.get(key);
-        if (!rec) {
-          map.set(key, rec = { count: 0, word: [] });
-        }
-        let word = opArray[i].insert as string;
-        // 检查后面是否还存在相同的标记
-        for (let j = i + 1; j < opArray.length; j++) {
-          if (!opArray[j].attributes || opArray[j].attributes![key] !== value) {
-            break;
-          }
-          word += opArray[j].insert || '';
-          delete opArray[j].attributes![key];
-        }
-        rec.count++;
-        rec.word.push(word);
-      }
-    }
-    return map;
-  }, [visible, editor]);
-
-  const copyFnRef = useCacheRef((key: string) => {
-    let text = '';
-    if (key === 'name') {
-      text = list.map(v => v.name).join('\n');
-    } else if (key === '$count$') {
-      text = list.map(v => analyse.get(v.typeKey)?.count || 0).join('\n');
-    }
-    if (!text) {
-      Toast.warning('内容为空');
-      return;
-    }
-    Modal.info({
-      title: '手动复制内容到剪切板',
-      width: 500,
-      content: <TextArea value={text} autosize={{ minRows: 1, maxRows: 10 }} />,
-    });
-  });
-
-  const [effectType, allCount] = useMemo(() => {
-    let _typeCount = 0;
-    let _allCount = 0;
-    for (const [, value] of analyse) {
-      if (value.count) {
-        _typeCount++;
-        _allCount += value.count;
-      }
-    }
-    return [_typeCount, _allCount] as const;
-  }, [analyse]);
-
-  const columns = useMemo<ColumnProps<WordTypeInfo>[]>(() => [
-    {
-      title: (
-        <div style={{display: 'flex', alignItems: 'center' }}>
-          名称
-          <IconCopy style={{ cursor: 'pointer', color: 'blue' }} onClick={() => copyFnRef.current('name')}/>
-        </div>
-      ),
-      dataIndex: 'name',
-      width: 200,
-      render: (text: string, record: WordTypeInfo) => (
-        <div style={{ textAlign: 'center', backgroundColor: record.backgroundColor, color: record.color}}>
-          {text}
-        </div>
-      ),
-    },
-    {
-      title: 'typeKey',
-      dataIndex: 'typeKey',
-      width: 100,
-    },
-    {
-      title: (
-        <div style={{display: 'flex', alignItems: 'center' }}>
-          频次统计
-          <IconCopy style={{ cursor: 'pointer', color: 'blue' }} onClick={() => copyFnRef.current('$count$')}/>
-        </div>
-      ),
-      dataIndex: '$count$',
-      width: 120,
-      render: (_, record: WordTypeInfo) => {
-        const info = analyse.get(record.typeKey);
-        if (!info?.count) {
-          return <div style={{textAlign: 'center'}}>0</div>
-        }
-        const colorStyle: CSSProperties = {
-          display: 'inline-block',
-          backgroundColor: record.backgroundColor,
-          color: record.color,
-          padding: 5,
-        }
-        const style: CSSProperties = {display: 'inline-block', padding: 5}
-        return (
-          <Popover
-            style={{maxWidth: '50vw', maxHeight: '50vh', overflowY: 'auto'}}
-            position="bottomLeft"
-            content={() => (
-              <div style={{padding: 10}}>
-                {info.word.map((value, index) => (
-                  <div style={index % 2 ? style : colorStyle}>{value}</div>
-                ))}
-              </div>
-            )}
-          >
-            <div style={{color: 'blue', textAlign: 'center', fontWeight: 'bolder'}}>{info.count}</div>
-          </Popover>
-        )
-      },
-    },
-    {
-      title: '频次占比',
-      dataIndex: '$percent$',
-      width: 100,
-      render: (_, record: WordTypeInfo) => {
-        const info = analyse.get(record.typeKey);
-        return (
-          <div style={{ backgroundColor: record.backgroundColor, color: record.color, textAlign: 'center' }}>
-            {info ? (info.count / allCount * 100).toFixed(2) + '%' : '0'}
-          </div>
-        );
-      },
-    },
-    {
-      title: '描述',
-      dataIndex: 'description',
-      render: (text: string, record: WordTypeInfo) => (
-        <div style={{ backgroundColor: record.backgroundColor, color: record.color}}>
-          {text}
-        </div>
-      ),
-    },
-  ], [analyse, allCount]);
-  return (
-    <Modal
-      visible={visible}
-      closeOnEsc={true}
-      centered={true}
-      title={
-        <span>
-          数据统计(有效类型:&nbsp;&nbsp;
-          <span style={{ color: 'green'}}>{effectType}</span>
-          ,总数统计:&nbsp;&nbsp;
-          <span style={{ color: 'green'}}>{allCount}</span>
-          )
-        </span>
-      }
-      width={window.innerWidth * 0.8}
-      onCancel={() => setVisible(false)}
-      footer={<span />}
-    >
-      <Table
-        columns={columns}
-        dataSource={list}
-        scroll={{ x: window.innerWidth * 0.6, y: window.innerHeight * 0.6 }}
-        pagination={false}
-      />
-    </Modal>
-  )
 }
