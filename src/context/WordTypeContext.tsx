@@ -317,7 +317,7 @@ function useWordTypeSetting(list: WordTypeInfo[], wordTypeContext: IWordTypeCont
 
 function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean) => void;}) {
   const { visible, setVisible } = props;
-  const list = wordTypeQuery.useQuery().data!;
+  const list = wordTypeQuery.run('flatArray');
   const { editor } = useEditorContext();
   const analyse = useMemo(() => {
     const map = new Map<string, {count: number; word: string[]}>();

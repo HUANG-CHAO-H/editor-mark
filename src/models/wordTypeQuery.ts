@@ -209,7 +209,7 @@ export const wordTypeQuery = new QueryHelper(wordTypeLoader, {
         hasChange = true;
       }
       if (!arr[i].children?.length) {
-        return;
+        continue;
       }
       const children = arr[i].children!;
       const childArr = Array(children.length);
