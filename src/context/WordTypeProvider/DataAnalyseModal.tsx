@@ -1,7 +1,7 @@
-import {CSSProperties, useMemo} from "react";
+import {CSSProperties, useMemo, useState} from "react";
 import type {Ops} from "@editor-kit/delta/dist/interface";
 import cloneDeep from "lodash/cloneDeep";
-import {Modal, Popover, Table, TextArea, Toast} from "@douyinfe/semi-ui";
+import {Modal, Popover, Table, TextArea, Toast, Button} from "@douyinfe/semi-ui";
 import type {ColumnProps} from "@douyinfe/semi-ui/lib/es/table/interface";
 import {IconCopy} from "@douyinfe/semi-icons";
 import {WordTypeInfo, wordTypeQuery} from "../../models";
@@ -11,7 +11,11 @@ import './style.less';
 
 export function DataAnalyseModal(props: {visible: boolean, setVisible: (value: boolean) => void;}) {
   const { visible, setVisible } = props;
-  const list = wordTypeQuery.useQuery().data!;
+  const [treeMode, setTreeMode] = useState(true);
+  const treeList = wordTypeQuery.useQuery().data!;
+  const flatList = wordTypeQuery.run('flatArray');
+  const list = treeMode ? treeList : flatList;
+
   const { editor } = useEditorContext();
   const analyse = useMemo(() => {
     const map = new Map<string, {count: number; word: string[]}>();
@@ -50,10 +54,10 @@ export function DataAnalyseModal(props: {visible: boolean, setVisible: (value: b
   const columns = useMemo<ColumnProps<WordTypeInfo>[]>(() => createColumns(list, analyse), [list, analyse]);
   return (
     <Modal
+      title={<span>数据统计&nbsp;<Button onClick={() => setTreeMode(v => !v)}>模式切换</Button></span>}
       visible={visible}
       closeOnEsc={true}
       centered={true}
-      title={'数据统计'}
       width={window.innerWidth * 0.8}
       onCancel={() => setVisible(false)}
       footer={<span />}
@@ -64,11 +68,15 @@ export function DataAnalyseModal(props: {visible: boolean, setVisible: (value: b
         scroll={{ x: window.innerWidth * 0.6, y: window.innerHeight * 0.6 }}
         pagination={false}
         rowKey={'typeKey'}
-        hideExpandedColumn={false}
-        expandedRowRender={(record?: WordTypeInfo) => record ? <ExpandedRow record={record} docAnalyse={analyse} /> : null}
+        hideExpandedColumn={!treeMode}
+        expandedRowRender={
+          treeMode
+            ? ((record?: WordTypeInfo) => record ? <ExpandedRow record={record} docAnalyse={analyse} /> : null)
+            : undefined
+        }
         className={'data-analyse-table'}
         childrenRecordName={''}
-        expandRowByClick={true}
+        expandRowByClick={treeMode}
       />
     </Modal>
   )
